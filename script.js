@@ -14,7 +14,7 @@ const camera = new THREE.PerspectiveCamera(
     0.1,
     1000
 );
-camera.position.set(0, 1.6, 5); // Slightly above the ground
+camera.position.set(0, 10, 5); // Slightly above the ground
 
 // Add lighting
 const light = new THREE.DirectionalLight(0xffffff, 1);
