@@ -8,6 +8,8 @@ document.body.appendChild(renderer.domElement);
 
 // Create the scene and camera
 const scene = new THREE.Scene();
+scene.clear(); // Clear any previous objects in the scene
+
 const camera = new THREE.PerspectiveCamera(
     75,
     window.innerWidth / window.innerHeight,
@@ -26,13 +28,19 @@ const loader = new THREE.GLTFLoader();
 
 // Array to hold collidable objects
 const collidableObjects = [];
+let environmentLoaded = false; // Track if the environment is already loaded
 
 // Load the environment and add it to the scene
 loader.load('assets/models/environment.glb', (gltf) => {
+    if (environmentLoaded) return; // Prevent loading the environment multiple times
+    environmentLoaded = true;
+
     const environment = gltf.scene;
     environment.scale.set(10, 10, 10); // Scale the environment
     environment.position.set(0, -5, 0); // Position it in the scene
     scene.add(environment);
+
+    console.log("Environment successfully added to the scene");
 
     // Add all meshes in the environment to collidable objects
     environment.traverse((child) => {
@@ -254,10 +262,12 @@ document.addEventListener("mousedown", shootBullet);
 function animate() {
     requestAnimationFrame(animate);
 
-    updateMovement(); // Check and apply movement and gravity
-    updateBullets(); // Handle bullets
-    updateEnemies(); // Update enemies
+    updateMovement(); // Check and apply player movement
+    checkCollisions(); // Ensure the player doesn't pass through objects
+    updateBullets(); // Handle bullets fired by the player
+    updateEnemies(); // Move enemies toward the player
 
-    renderer.render(scene, camera);
+    renderer.render(scene, camera); // Render the scene
 }
+
 animate();
