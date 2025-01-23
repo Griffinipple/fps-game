@@ -115,10 +115,24 @@ function startGame() {
     for (const object of collidableObjects) {
       const objectBox = new THREE.Box3().setFromObject(object);
       if (cameraBox.intersectsBox(objectBox)) {
-        return true; // Collision detected
+        return objectBox; // Return the object causing the collision
       }
     }
-    return false; // No collision
+    return null; // No collision
+  }
+
+  function slideAlongSurface(direction, objectBox, position) {
+    const slideDirection = direction.clone();
+    const objectNormal = new THREE.Vector3();
+
+    // Calculate the object's normal
+    if (objectBox) {
+      const center = objectBox.getCenter(new THREE.Vector3());
+      objectNormal.copy(position).sub(center).normalize();
+      slideDirection.sub(objectNormal.multiplyScalar(objectNormal.dot(slideDirection)));
+    }
+
+    return slideDirection;
   }
 
   function updatePlayer() {
@@ -146,10 +160,16 @@ function startGame() {
     // Predict new position for horizontal movement
     const newPosition = camera.position.clone().add(direction.multiplyScalar(speed));
 
-    // Check for collision only for horizontal movement
-    if (!checkCollision(new THREE.Vector3(newPosition.x, camera.position.y, newPosition.z))) {
-      camera.position.x = newPosition.x;
-      camera.position.z = newPosition.z;
+    // Check for collision
+    const collidedObject = checkCollision(newPosition);
+    if (collidedObject) {
+      const slideDirection = slideAlongSurface(direction, collidedObject, camera.position);
+      const slidePosition = camera.position.clone().add(slideDirection.multiplyScalar(speed));
+      if (!checkCollision(slidePosition)) {
+        camera.position.copy(slidePosition);
+      }
+    } else {
+      camera.position.copy(newPosition);
     }
 
     // Handle jumping
