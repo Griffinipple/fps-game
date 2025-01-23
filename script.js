@@ -23,17 +23,25 @@ function startGame() {
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.shadowMap.enabled = true;
 
-  // Add Ambient Light
-  const ambientLight = new THREE.AmbientLight(0xffffff, 0.5); // Soft ambient light
+  // Position the camera
+  camera.position.set(0, 2, 5); // Move the camera up and back
+  camera.lookAt(0, 0, 0); // Make the camera face the center of the scene
+
+  // Add Ambient Light (soft light everywhere)
+  const ambientLight = new THREE.AmbientLight(0xffffff, 0.5); // Increase intensity
   scene.add(ambientLight);
 
-  // Add Directional Light
-  const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+  // Add Directional Light (like sunlight)
+  const directionalLight = new THREE.DirectionalLight(0xffffff, 1.5); // Bright sunlight
   directionalLight.position.set(10, 10, -10);
   directionalLight.castShadow = true;
   scene.add(directionalLight);
 
-  // Create a Platform (Ground)
+  // Add a helper to see where the directional light is
+  const lightHelper = new THREE.DirectionalLightHelper(directionalLight, 2);
+  scene.add(lightHelper);
+
+  // Add a Platform (Ground)
   const platformGeometry = new THREE.PlaneGeometry(50, 50);
   const platformMaterial = new THREE.MeshStandardMaterial({ color: 0x228b22 }); // Green for grass
   const platform = new THREE.Mesh(platformGeometry, platformMaterial);
