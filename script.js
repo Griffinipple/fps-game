@@ -48,12 +48,25 @@ function startGame() {
   const loader = new THREE.GLTFLoader();
   loader.load('/assets/models/environment.glb', (gltf) => {
     const environment = gltf.scene;
+
+    // Compute the bounding box of the environment to position it properly
+    const box = new THREE.Box3().setFromObject(environment);
+    const size = new THREE.Vector3();
+    const center = new THREE.Vector3();
+    box.getSize(size); // Get the size of the bounding box
+    box.getCenter(center); // Get the center of the bounding box
+
+    // Adjust the environment's position to place it under the camera
+    environment.position.set(-center.x, -center.y, -center.z); // Center the environment
+    environment.position.y -= 2; // Lower it slightly so the camera is above it
+
     environment.traverse((child) => {
       if (child.isMesh) {
         child.castShadow = true;
         child.receiveShadow = true;
       }
     });
+
     scene.add(environment);
   });
 
