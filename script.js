@@ -28,7 +28,7 @@ const loader = new THREE.GLTFLoader();
 loader.load('assets/models/weapon.glb', (gltf) => {
     const weapon = gltf.scene;
     weapon.scale.set(0.5, 0.5, 0.5); // Scale down
-    weapon.position.set(0, -0.5, -1.5); // Attach weapon in front of camera
+    weapon.position.set(1, -0.5, -1.5); // Attach weapon in front of camera
     camera.add(weapon); // Attach weapon to camera for FPS view
     scene.add(camera);
 });
