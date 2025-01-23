@@ -24,6 +24,24 @@ scene.add(light);
 // Load GLTF models
 const loader = new THREE.GLTFLoader();
 
+// Array to hold collidable objects
+const collidableObjects = [];
+
+// Load the environment and add it to the scene
+loader.load('assets/models/environment.glb', (gltf) => {
+    const environment = gltf.scene;
+    environment.scale.set(10, 10, 10); // Scale the environment
+    environment.position.set(0, -5, 0); // Position it in the scene
+    scene.add(environment);
+
+    // Add all meshes in the environment to collidable objects
+    environment.traverse((child) => {
+        if (child.isMesh) {
+            collidableObjects.push(child);
+        }
+    });
+});
+
 // Add gun (weapon model) to the camera
 loader.load('assets/models/weapon.glb', (gltf) => {
     const weapon = gltf.scene;
@@ -33,22 +51,32 @@ loader.load('assets/models/weapon.glb', (gltf) => {
     camera.add(weapon); // Attach the weapon to the camera
 });
 
-// Add ground for collision testing
-const groundGeometry = new THREE.PlaneGeometry(50, 50);
-const groundMaterial = new THREE.MeshBasicMaterial({ color: 0x008800 });
-const ground = new THREE.Mesh(groundGeometry, groundMaterial);
-ground.rotation.x = -Math.PI / 2; // Make it horizontal
-ground.position.y = -1; // Slightly below the player
-scene.add(ground);
-
-// Add ground to collidable objects
-const collidableObjects = [ground];
-
 // Player movement and gravity
 const velocity = new THREE.Vector3(); // x, y, z movement
 const gravity = -0.01; // Strength of gravity
 const jumpStrength = 0.2; // How high the player can jump
 let isOnGround = false; // Check if the player is on the ground
+
+// Pointer Lock API for mouse input
+const mouseSensitivity = 0.002;
+
+function onMouseMove(event) {
+    camera.rotation.y -= event.movementX * mouseSensitivity; // Horizontal rotation
+    camera.rotation.x -= event.movementY * mouseSensitivity; // Vertical rotation
+    camera.rotation.x = Math.max(Math.min(camera.rotation.x, Math.PI / 2), -Math.PI / 2); // Clamp vertical rotation
+}
+
+document.body.addEventListener("click", () => {
+    canvas.requestPointerLock(); // Lock the pointer
+});
+
+document.addEventListener("pointerlockchange", () => {
+    if (document.pointerLockElement === canvas) {
+        document.addEventListener("mousemove", onMouseMove, false);
+    } else {
+        document.removeEventListener("mousemove", onMouseMove, false);
+    }
+});
 
 // Enemies
 const enemies = [];
@@ -200,25 +228,6 @@ document.addEventListener("keyup", (event) => {
 
 // Shoot bullets
 document.addEventListener("mousedown", shootBullet);
-
-// Mouse look
-document.body.addEventListener("click", () => {
-    canvas.requestPointerLock();
-});
-
-document.addEventListener("pointerlockchange", () => {
-    if (document.pointerLockElement === canvas) {
-        document.addEventListener("mousemove", onMouseMove, false);
-    } else {
-        document.removeEventListener("mousemove", onMouseMove, false);
-    }
-});
-
-function onMouseMove(event) {
-    camera.rotation.y -= event.movementX * 0.002;
-    camera.rotation.x -= event.movementY * 0.002;
-    camera.rotation.x = Math.max(Math.min(camera.rotation.x, Math.PI / 2), -Math.PI / 2);
-}
 
 // Game loop
 function animate() {
