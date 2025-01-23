@@ -14,13 +14,40 @@ const camera = new THREE.PerspectiveCamera(
     0.1,
     1000
 );
-camera.position.z = 5;
+camera.position.set(0, 1.6, 5); // Slightly above the ground
 
-// Create a simple cube as the player's "weapon"
-const geometry = new THREE.BoxGeometry();
-const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-const cube = new THREE.Mesh(geometry, material);
-scene.add(cube);
+// Add lighting
+const light = new THREE.DirectionalLight(0xffffff, 1);
+light.position.set(5, 10, 7.5);
+scene.add(light);
+
+// Load GLTF models
+const loader = new THREE.GLTFLoader();
+
+// Load weapon
+loader.load('assets/models/weapon.glb', function (gltf) {
+    const weapon = gltf.scene;
+    weapon.scale.set(0.5, 0.5, 0.5); // Scale down
+    weapon.position.set(0, -0.5, -1.5); // Position relative to camera
+    camera.add(weapon); // Attach the weapon to the camera
+    scene.add(camera);
+});
+
+// Load enemy
+loader.load('assets/models/enemy.glb', function (gltf) {
+    const enemy = gltf.scene;
+    enemy.scale.set(1, 1, 1); // Default scale
+    enemy.position.set(0, 0, -10); // Place enemy in front of the player
+    scene.add(enemy);
+});
+
+// Load environment
+loader.load('assets/models/environment.glb', function (gltf) {
+    const environment = gltf.scene;
+    environment.scale.set(10, 10, 10); // Scale the environment
+    environment.position.set(0, -5, 0); // Position the environment
+    scene.add(environment);
+});
 
 // Handle resizing
 window.addEventListener("resize", () => {
@@ -33,10 +60,7 @@ window.addEventListener("resize", () => {
 function animate() {
     requestAnimationFrame(animate);
 
-    // Rotate the cube for visual feedback
-    cube.rotation.x += 0.01;
-    cube.rotation.y += 0.01;
-
+    // Render the scene
     renderer.render(scene, camera);
 }
 
