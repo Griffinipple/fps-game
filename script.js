@@ -107,6 +107,9 @@ function startGame() {
   const gravity = -0.005; // Gravity affecting the player
   const jumpStrength = 0.15; // Jump height
 
+  // Collision Detection Setup
+  const collidableObjects = [houseBase, roof];
+
   function updatePlayer() {
     const speed = 0.1; // Movement speed
     const direction = new THREE.Vector3(); // Movement direction
@@ -129,8 +132,21 @@ function startGame() {
     // Normalize the direction vector (to avoid diagonal speed boost)
     direction.normalize();
 
-    // Move the camera
-    camera.position.add(direction.multiplyScalar(speed));
+    // Check collision before moving
+    const cameraBox = new THREE.Box3().setFromCenterAndSize(camera.position, new THREE.Vector3(1, 1, 1));
+    let canMove = true;
+
+    for (const object of collidableObjects) {
+      const objectBox = new THREE.Box3().setFromObject(object);
+      if (cameraBox.intersectsBox(objectBox)) {
+        canMove = false;
+        break;
+      }
+    }
+
+    if (canMove) {
+      camera.position.add(direction.multiplyScalar(speed));
+    }
 
     // Handle jumping
     if (keys[' ']) {
