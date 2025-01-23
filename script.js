@@ -23,14 +23,22 @@ function startGame() {
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.shadowMap.enabled = true;
 
-  // Add Lighting
-  const light = new THREE.AmbientLight(0xffffff, 0.8); // Soft ambient light
-  scene.add(light);
+  // Add Ambient Light
+  const ambientLight = new THREE.AmbientLight(0xffffff, 0.3); // Soft ambient light
+  scene.add(ambientLight);
 
-  const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
-  directionalLight.position.set(5, 10, 7.5);
-  directionalLight.castShadow = true; // Enable shadows
-  scene.add(directionalLight);
+  // Add Directional Light (for sunlight effect)
+  const sunLight = new THREE.PointLight(0xffdd88, 2, 100); // Light color and intensity
+  sunLight.position.set(10, 10, -10); // Position of the light source
+  sunLight.castShadow = true; // Enable shadow casting
+  scene.add(sunLight);
+
+  // Add Sun Sphere (Glowing effect)
+  const sunGeometry = new THREE.SphereGeometry(1.5, 32, 32); // Sphere size and detail
+  const sunMaterial = new THREE.MeshBasicMaterial({ color: 0xffcc00, emissive: 0xffdd88, emissiveIntensity: 1 });
+  const sun = new THREE.Mesh(sunGeometry, sunMaterial);
+  sun.position.set(10, 10, -10); // Place the sun in the same position as the light
+  scene.add(sun);
 
   // Create the platform (ground)
   const platformGeometry = new THREE.PlaneGeometry(50, 50); // Large ground plane
