@@ -24,52 +24,31 @@ function startGame() {
   renderer.shadowMap.enabled = true;
 
   // Add Ambient Light
-  const ambientLight = new THREE.AmbientLight(0xffffff, 0.3); // Soft ambient light
+  const ambientLight = new THREE.AmbientLight(0xffffff, 0.5); // Soft ambient light
   scene.add(ambientLight);
 
-  // Add Directional Light (for sunlight effect)
-  const sunLight = new THREE.PointLight(0xffdd88, 2, 100); // Light color and intensity
-  sunLight.position.set(10, 10, -10); // Position of the light source
-  sunLight.castShadow = true; // Enable shadow casting
-  scene.add(sunLight);
+  // Add Directional Light
+  const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+  directionalLight.position.set(10, 10, -10);
+  directionalLight.castShadow = true;
+  scene.add(directionalLight);
 
-  // Add Sun Sphere (Glowing effect)
-  const sunGeometry = new THREE.SphereGeometry(1.5, 32, 32); // Sphere size and detail
-  const sunMaterial = new THREE.MeshBasicMaterial({ color: 0xffcc00, emissive: 0xffdd88, emissiveIntensity: 1 });
-  const sun = new THREE.Mesh(sunGeometry, sunMaterial);
-  sun.position.set(10, 10, -10); // Place the sun in the same position as the light
-  scene.add(sun);
-
-  // Create the platform (ground)
-  const platformGeometry = new THREE.PlaneGeometry(50, 50); // Large ground plane
+  // Create a Platform (Ground)
+  const platformGeometry = new THREE.PlaneGeometry(50, 50);
   const platformMaterial = new THREE.MeshStandardMaterial({ color: 0x228b22 }); // Green for grass
   const platform = new THREE.Mesh(platformGeometry, platformMaterial);
   platform.rotation.x = -Math.PI / 2; // Rotate to lie flat
-  platform.receiveShadow = true; // Enable shadow reception
+  platform.receiveShadow = true;
   scene.add(platform);
 
-  // Load Models (Gun and Enemy)
-  const loader = new THREE.GLTFLoader();
+  // Add a Sun Sphere
+  const sunGeometry = new THREE.SphereGeometry(1.5, 32, 32);
+  const sunMaterial = new THREE.MeshBasicMaterial({ color: 0xffcc00, emissive: 0xffdd88 });
+  const sun = new THREE.Mesh(sunGeometry, sunMaterial);
+  sun.position.set(10, 10, -10);
+  scene.add(sun);
 
-  let gun, enemy;
-
-  // Load gun model
-  loader.load('/assets/models/gun.glb', (gltf) => {
-    gun = gltf.scene;
-    gun.position.set(0, -1, -2); // Position the gun
-    camera.add(gun); // Attach the gun to the camera
-    scene.add(camera);
-  });
-
-  // Load enemy model
-  loader.load('/assets/models/enemy.glb', (gltf) => {
-    enemy = gltf.scene;
-    enemy.position.set(0, 1, -5); // Place enemy slightly above the ground
-    enemy.castShadow = true; // Enable enemy to cast shadows
-    scene.add(enemy);
-  });
-
-  // Enable Pointer Lock for Mouse Look
+  // Pointer Lock for Mouse Look
   const canvas = renderer.domElement;
   canvas.requestPointerLock = canvas.requestPointerLock || canvas.mozRequestPointerLock;
   document.exitPointerLock = document.exitPointerLock || document.mozExitPointerLock;
@@ -78,24 +57,24 @@ function startGame() {
     canvas.requestPointerLock();
   });
 
-  let yaw = 0, pitch = 0; // Camera rotation angles
+  // Mouse Look Variables
+  let yaw = 0, pitch = 0;
 
   document.addEventListener('mousemove', (event) => {
     if (document.pointerLockElement === canvas) {
       const movementX = event.movementX || 0;
       const movementY = event.movementY || 0;
 
-      yaw -= movementX * 0.002; // Adjust sensitivity here
+      yaw -= movementX * 0.002;
       pitch -= movementY * 0.002;
 
-      // Clamp the pitch to avoid flipping upside down
       pitch = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, pitch));
 
       camera.rotation.set(pitch, yaw, 0);
     }
   });
 
-  // Basic Player Controls (WASD)
+  // WASD Controls
   const keys = {};
   document.addEventListener('keydown', (e) => (keys[e.key] = true));
   document.addEventListener('keyup', (e) => (keys[e.key] = false));
@@ -103,16 +82,8 @@ function startGame() {
   function updatePlayer() {
     const speed = 0.1;
 
-    const forward = new THREE.Vector3(
-      Math.sin(yaw),
-      0,
-      -Math.cos(yaw)
-    );
-    const right = new THREE.Vector3(
-      Math.sin(yaw + Math.PI / 2),
-      0,
-      -Math.cos(yaw + Math.PI / 2)
-    );
+    const forward = new THREE.Vector3(Math.sin(yaw), 0, -Math.cos(yaw));
+    const right = new THREE.Vector3(Math.sin(yaw + Math.PI / 2), 0, -Math.cos(yaw + Math.PI / 2));
 
     if (keys['w']) camera.position.add(forward.multiplyScalar(speed));
     if (keys['s']) camera.position.add(forward.multiplyScalar(-speed));
@@ -125,10 +96,6 @@ function startGame() {
     requestAnimationFrame(animate);
 
     updatePlayer(); // Update player movement
-
-    if (gun) gun.rotation.y += 0.01; // Rotate the gun slightly for effect
-    if (enemy) enemy.rotation.y += 0.01; // Rotate the enemy slightly
-
     renderer.render(scene, camera); // Render the scene
   }
 
