@@ -110,6 +110,17 @@ function startGame() {
   // Collision Detection Setup
   const collidableObjects = [houseBase, roof];
 
+  function checkCollision(newPosition) {
+    const cameraBox = new THREE.Box3().setFromCenterAndSize(newPosition, new THREE.Vector3(1, 1, 1));
+    for (const object of collidableObjects) {
+      const objectBox = new THREE.Box3().setFromObject(object);
+      if (cameraBox.intersectsBox(objectBox)) {
+        return true; // Collision detected
+      }
+    }
+    return false; // No collision
+  }
+
   function updatePlayer() {
     const speed = 0.1; // Movement speed
     const direction = new THREE.Vector3(); // Movement direction
@@ -132,20 +143,12 @@ function startGame() {
     // Normalize the direction vector (to avoid diagonal speed boost)
     direction.normalize();
 
-    // Check collision before moving
-    const cameraBox = new THREE.Box3().setFromCenterAndSize(camera.position, new THREE.Vector3(1, 1, 1));
-    let canMove = true;
+    // Calculate the new position
+    const newPosition = camera.position.clone().add(direction.multiplyScalar(speed));
 
-    for (const object of collidableObjects) {
-      const objectBox = new THREE.Box3().setFromObject(object);
-      if (cameraBox.intersectsBox(objectBox)) {
-        canMove = false;
-        break;
-      }
-    }
-
-    if (canMove) {
-      camera.position.add(direction.multiplyScalar(speed));
+    // Check for collisions
+    if (!checkCollision(newPosition)) {
+      camera.position.copy(newPosition);
     }
 
     // Handle jumping
