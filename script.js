@@ -118,8 +118,8 @@ function startGame() {
     // Adjust movement direction based on key presses (reversed directions)
     if (keys['w']) direction.add(forward.negate()); // Reverse forward
     if (keys['s']) direction.add(forward); // Normal backward
-    if (keys['a']) direction.add(right.negate()); // Reverse right
-    if (keys['d']) direction.add(right); // Normal left
+    if (keys['a']) direction.add(right); // Reverse right
+    if (keys['d']) direction.add(right.negate()); // Normal left
 
     // Normalize the direction vector (to avoid diagonal speed boost)
     direction.normalize();
