@@ -44,31 +44,32 @@ function startGame() {
   sun.position.set(0, 50, 0); // Match the position of the directional light
   scene.add(sun);
 
-  // Load Environment Model
-  const loader = new THREE.GLTFLoader();
-  loader.load('/assets/models/environment.glb', (gltf) => {
-    const environment = gltf.scene;
+  // Create Ground
+  const groundGeometry = new THREE.PlaneGeometry(50, 50);
+  const groundMaterial = new THREE.MeshStandardMaterial({ color: 0x228b22 }); // Green ground
+  const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+  ground.rotation.x = -Math.PI / 2; // Rotate to lay flat
+  ground.receiveShadow = true;
+  scene.add(ground);
 
-    // Compute the bounding box of the environment to position it properly
-    const box = new THREE.Box3().setFromObject(environment);
-    const size = new THREE.Vector3();
-    const center = new THREE.Vector3();
-    box.getSize(size); // Get the size of the bounding box
-    box.getCenter(center); // Get the center of the bounding box
+  // Create Simple House
+  // House Base
+  const houseBaseGeometry = new THREE.BoxGeometry(4, 3, 4);
+  const houseBaseMaterial = new THREE.MeshStandardMaterial({ color: 0x8b4513 }); // Brown walls
+  const houseBase = new THREE.Mesh(houseBaseGeometry, houseBaseMaterial);
+  houseBase.position.set(0, 1.5, 0); // Center above the ground
+  houseBase.castShadow = true;
+  houseBase.receiveShadow = true;
+  scene.add(houseBase);
 
-    // Adjust the environment's position to place it under the camera
-    environment.position.set(-center.x, -center.y, -center.z); // Center the environment
-    environment.position.y -= 2; // Lower it slightly so the camera is above it
-
-    environment.traverse((child) => {
-      if (child.isMesh) {
-        child.castShadow = true;
-        child.receiveShadow = true;
-      }
-    });
-
-    scene.add(environment);
-  });
+  // Roof
+  const roofGeometry = new THREE.ConeGeometry(3.5, 2, 4);
+  const roofMaterial = new THREE.MeshStandardMaterial({ color: 0x8b0000 }); // Red roof
+  const roof = new THREE.Mesh(roofGeometry, roofMaterial);
+  roof.position.set(0, 4, 0); // Position on top of the house base
+  roof.rotation.y = Math.PI / 4; // Rotate to align with the base
+  roof.castShadow = true;
+  scene.add(roof);
 
   // Pointer Lock for Mouse Look
   const canvas = renderer.domElement;
