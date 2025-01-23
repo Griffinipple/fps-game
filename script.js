@@ -33,24 +33,29 @@ function startGame() {
 
   // Add Directional Light (Sunlight)
   const directionalLight = new THREE.DirectionalLight(0xffffff, 1.5);
-  directionalLight.position.set(10, 10, -10);
+  directionalLight.position.set(0, 50, 0); // Move the sun higher up in the air
   directionalLight.castShadow = true;
   scene.add(directionalLight);
 
   // Add a Sun Sphere
-  const sunGeometry = new THREE.SphereGeometry(1.5, 32, 32);
+  const sunGeometry = new THREE.SphereGeometry(3, 32, 32); // Increase the size of the sun
   const sunMaterial = new THREE.MeshBasicMaterial({ color: 0xffcc00, emissive: 0xffdd88 });
   const sun = new THREE.Mesh(sunGeometry, sunMaterial);
-  sun.position.set(10, 10, -10);
+  sun.position.set(0, 50, 0); // Match the position of the directional light
   scene.add(sun);
 
-  // Add a Platform (Ground)
-  const platformGeometry = new THREE.PlaneGeometry(50, 50);
-  const platformMaterial = new THREE.MeshStandardMaterial({ color: 0x228b22 }); // Green for grass
-  const platform = new THREE.Mesh(platformGeometry, platformMaterial);
-  platform.rotation.x = -Math.PI / 2; // Rotate to lie flat
-  platform.receiveShadow = true;
-  scene.add(platform);
+  // Load Environment Model
+  const loader = new THREE.GLTFLoader();
+  loader.load('/assets/models/environment.glb', (gltf) => {
+    const environment = gltf.scene;
+    environment.traverse((child) => {
+      if (child.isMesh) {
+        child.castShadow = true;
+        child.receiveShadow = true;
+      }
+    });
+    scene.add(environment);
+  });
 
   // Pointer Lock for Mouse Look
   const canvas = renderer.domElement;
@@ -95,7 +100,7 @@ function startGame() {
     if (keys['w']) direction.add(forward.negate()); // Move forward
     if (keys['s']) direction.add(forward); // Move backward
     if (keys['a']) direction.add(right); // Move left
-    if (keys['d']) direction.add(right.negate(); // Move right
+    if (keys['d']) direction.add(right.negate()); // Move right
 
     // Normalize the direction vector (to avoid diagonal speed boost)
     direction.normalize();
