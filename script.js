@@ -110,8 +110,8 @@ function startGame() {
   // Collision Detection Setup
   const collidableObjects = [houseBase, roof];
 
-  function checkCollision(newPosition) {
-    const cameraBox = new THREE.Box3().setFromCenterAndSize(newPosition, new THREE.Vector3(1, 1, 1));
+  function checkCollision(position) {
+    const cameraBox = new THREE.Box3().setFromCenterAndSize(position, new THREE.Vector3(1, 1, 1));
     for (const object of collidableObjects) {
       const objectBox = new THREE.Box3().setFromObject(object);
       if (cameraBox.intersectsBox(objectBox)) {
@@ -123,7 +123,7 @@ function startGame() {
 
   function updatePlayer() {
     const speed = 0.1; // Movement speed
-    const direction = new THREE.Vector3(); // Movement direction
+    let direction = new THREE.Vector3();
 
     // Calculate forward and right vectors based on camera rotation
     const forward = new THREE.Vector3();
@@ -135,18 +135,18 @@ function startGame() {
     right.crossVectors(forward, new THREE.Vector3(0, 1, 0)); // Right is perpendicular to forward and up
 
     // Adjust movement direction based on key presses
-    if (keys['w']) direction.add(forward); // Move forward
-    if (keys['s']) direction.add(forward.negate()); // Move backward
-    if (keys['a']) direction.add(right.negate()); // Move left
-    if (keys['d']) direction.add(right); // Move right
+    if (keys['w']) direction.add(forward);
+    if (keys['s']) direction.add(forward.negate());
+    if (keys['a']) direction.add(right.negate());
+    if (keys['d']) direction.add(right);
 
-    // Normalize the direction vector (to avoid diagonal speed boost)
+    // Normalize direction
     direction.normalize();
 
-    // Calculate the new position
+    // Predict new position
     const newPosition = camera.position.clone().add(direction.multiplyScalar(speed));
 
-    // Check for collisions
+    // Check for collision only in the direction of movement
     if (!checkCollision(newPosition)) {
       camera.position.copy(newPosition);
     }
