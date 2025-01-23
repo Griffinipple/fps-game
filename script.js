@@ -61,16 +61,55 @@ function startGame() {
     scene.add(enemy);
   });
 
+  // Enable Pointer Lock for Mouse Look
+  const canvas = renderer.domElement;
+  canvas.requestPointerLock = canvas.requestPointerLock || canvas.mozRequestPointerLock;
+  document.exitPointerLock = document.exitPointerLock || document.mozExitPointerLock;
+
+  canvas.addEventListener('click', () => {
+    canvas.requestPointerLock();
+  });
+
+  let yaw = 0, pitch = 0; // Camera rotation angles
+
+  document.addEventListener('mousemove', (event) => {
+    if (document.pointerLockElement === canvas) {
+      const movementX = event.movementX || 0;
+      const movementY = event.movementY || 0;
+
+      yaw -= movementX * 0.002; // Adjust sensitivity here
+      pitch -= movementY * 0.002;
+
+      // Clamp the pitch to avoid flipping upside down
+      pitch = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, pitch));
+
+      camera.rotation.set(pitch, yaw, 0);
+    }
+  });
+
   // Basic Player Controls (WASD)
   const keys = {};
   document.addEventListener('keydown', (e) => (keys[e.key] = true));
   document.addEventListener('keyup', (e) => (keys[e.key] = false));
 
   function updatePlayer() {
-    if (keys['w']) camera.position.z -= 0.1; // Move forward
-    if (keys['s']) camera.position.z += 0.1; // Move backward
-    if (keys['a']) camera.position.x -= 0.1; // Move left
-    if (keys['d']) camera.position.x += 0.1; // Move right
+    const speed = 0.1;
+
+    const forward = new THREE.Vector3(
+      Math.sin(yaw),
+      0,
+      -Math.cos(yaw)
+    );
+    const right = new THREE.Vector3(
+      Math.sin(yaw + Math.PI / 2),
+      0,
+      -Math.cos(yaw + Math.PI / 2)
+    );
+
+    if (keys['w']) camera.position.add(forward.multiplyScalar(speed));
+    if (keys['s']) camera.position.add(forward.multiplyScalar(-speed));
+    if (keys['a']) camera.position.add(right.multiplyScalar(-speed));
+    if (keys['d']) camera.position.add(right.multiplyScalar(speed));
   }
 
   // Game Loop
