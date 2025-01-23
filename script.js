@@ -143,12 +143,13 @@ function startGame() {
     // Normalize direction
     direction.normalize();
 
-    // Predict new position
+    // Predict new position for horizontal movement
     const newPosition = camera.position.clone().add(direction.multiplyScalar(speed));
 
-    // Check for collision only in the direction of movement
-    if (!checkCollision(newPosition)) {
-      camera.position.copy(newPosition);
+    // Check for collision only for horizontal movement
+    if (!checkCollision(new THREE.Vector3(newPosition.x, camera.position.y, newPosition.z))) {
+      camera.position.x = newPosition.x;
+      camera.position.z = newPosition.z;
     }
 
     // Handle jumping
@@ -159,9 +160,14 @@ function startGame() {
       }
     }
 
-    // Apply gravity
+    // Apply gravity and vertical movement
     velocityY += gravity;
-    camera.position.y += velocityY;
+    const newYPosition = camera.position.y + velocityY;
+
+    // Check for collision for vertical movement
+    if (!checkCollision(new THREE.Vector3(camera.position.x, newYPosition, camera.position.z))) {
+      camera.position.y = newYPosition;
+    }
 
     // Prevent falling through the ground
     if (camera.position.y < 2) {
