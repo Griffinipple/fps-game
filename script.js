@@ -1,21 +1,3 @@
-// Elements
-const lobby = document.getElementById('lobby');
-const playButton = document.getElementById('play-button');
-const gameDiv = document.getElementById('game');
-
-// Play Button Event Listener
-playButton.addEventListener('click', () => {
-  // Hide the lobby
-  lobby.style.display = 'none';
-
-  // Show the game canvas
-  gameDiv.style.display = 'block';
-
-  // Start the game
-  startGame();
-});
-
-// Game Initialization
 function startGame() {
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -25,6 +7,20 @@ function startGame() {
   // Add lighting
   const light = new THREE.AmbientLight(0xffffff, 0.8);
   scene.add(light);
+
+  // Add a directional light for shadows
+  const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+  directionalLight.position.set(5, 10, 7.5);
+  directionalLight.castShadow = true;
+  scene.add(directionalLight);
+
+  // Create the platform (ground)
+  const platformGeometry = new THREE.PlaneGeometry(50, 50); // Large ground plane
+  const platformMaterial = new THREE.MeshStandardMaterial({ color: 0x228b22 }); // Green for grass
+  const platform = new THREE.Mesh(platformGeometry, platformMaterial);
+  platform.rotation.x = -Math.PI / 2; // Rotate to lie flat
+  platform.receiveShadow = true;
+  scene.add(platform);
 
   // Load Models (Gun and Enemy)
   const loader = new THREE.GLTFLoader();
@@ -40,7 +36,7 @@ function startGame() {
 
   loader.load('/assets/models/enemy.glb', (gltf) => {
     enemy = gltf.scene;
-    enemy.position.set(0, 0, -5);
+    enemy.position.set(0, 1, -5); // Place enemy slightly above ground
     scene.add(enemy);
   });
 
