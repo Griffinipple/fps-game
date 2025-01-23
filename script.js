@@ -24,22 +24,25 @@ function startGame() {
   renderer.shadowMap.enabled = true;
 
   // Position the camera
-  camera.position.set(0, 2, 5); // Move the camera up and back
-  camera.lookAt(0, 0, 0); // Make the camera face the center of the scene
+  camera.position.set(0, 2, 5); // Start above the ground
+  camera.rotation.order = "YXZ"; // Use YXZ order for proper FPS-style rotations
 
-  // Add Ambient Light (soft light everywhere)
-  const ambientLight = new THREE.AmbientLight(0xffffff, 0.5); // Increase intensity
+  // Add Ambient Light
+  const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
   scene.add(ambientLight);
 
-  // Add Directional Light (like sunlight)
-  const directionalLight = new THREE.DirectionalLight(0xffffff, 1.5); // Bright sunlight
+  // Add Directional Light (Sunlight)
+  const directionalLight = new THREE.DirectionalLight(0xffffff, 1.5);
   directionalLight.position.set(10, 10, -10);
   directionalLight.castShadow = true;
   scene.add(directionalLight);
 
-  // Add a helper to see where the directional light is
-  const lightHelper = new THREE.DirectionalLightHelper(directionalLight, 2);
-  scene.add(lightHelper);
+  // Add a Sun Sphere
+  const sunGeometry = new THREE.SphereGeometry(1.5, 32, 32);
+  const sunMaterial = new THREE.MeshBasicMaterial({ color: 0xffcc00, emissive: 0xffdd88 });
+  const sun = new THREE.Mesh(sunGeometry, sunMaterial);
+  sun.position.set(10, 10, -10);
+  scene.add(sun);
 
   // Add a Platform (Ground)
   const platformGeometry = new THREE.PlaneGeometry(50, 50);
@@ -48,13 +51,6 @@ function startGame() {
   platform.rotation.x = -Math.PI / 2; // Rotate to lie flat
   platform.receiveShadow = true;
   scene.add(platform);
-
-  // Add a Sun Sphere
-  const sunGeometry = new THREE.SphereGeometry(1.5, 32, 32);
-  const sunMaterial = new THREE.MeshBasicMaterial({ color: 0xffcc00, emissive: 0xffdd88 });
-  const sun = new THREE.Mesh(sunGeometry, sunMaterial);
-  sun.position.set(10, 10, -10);
-  scene.add(sun);
 
   // Pointer Lock for Mouse Look
   const canvas = renderer.domElement;
@@ -66,16 +62,16 @@ function startGame() {
   });
 
   // Mouse Look Variables
-  let yaw = 0, pitch = 0;
+  let yaw = 0; // Horizontal rotation (left/right)
+  let pitch = 0; // Vertical rotation (up/down)
 
   document.addEventListener('mousemove', (event) => {
     if (document.pointerLockElement === canvas) {
-      const movementX = event.movementX || 0;
-      const movementY = event.movementY || 0;
+      const sensitivity = 0.002; // Mouse sensitivity
+      yaw -= event.movementX * sensitivity; // Rotate horizontally
+      pitch -= event.movementY * sensitivity; // Rotate vertically
 
-      yaw -= movementX * 0.002;
-      pitch -= movementY * 0.002;
-
+      // Clamp the pitch to avoid flipping (up/down rotation)
       pitch = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, pitch));
 
       camera.rotation.set(pitch, yaw, 0);
@@ -88,11 +84,21 @@ function startGame() {
   document.addEventListener('keyup', (e) => (keys[e.key] = false));
 
   function updatePlayer() {
-    const speed = 0.1;
+    const speed = 0.1; // Movement speed
 
-    const forward = new THREE.Vector3(Math.sin(yaw), 0, -Math.cos(yaw));
-    const right = new THREE.Vector3(Math.sin(yaw + Math.PI / 2), 0, -Math.cos(yaw + Math.PI / 2));
+    // Calculate movement directions
+    const forward = new THREE.Vector3(
+      Math.sin(yaw), 
+      0, 
+      -Math.cos(yaw)
+    );
+    const right = new THREE.Vector3(
+      Math.sin(yaw + Math.PI / 2),
+      0,
+      -Math.cos(yaw + Math.PI / 2)
+    );
 
+    // Update position based on key presses
     if (keys['w']) camera.position.add(forward.multiplyScalar(speed));
     if (keys['s']) camera.position.add(forward.multiplyScalar(-speed));
     if (keys['a']) camera.position.add(right.multiplyScalar(-speed));
