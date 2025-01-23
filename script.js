@@ -14,7 +14,7 @@ const camera = new THREE.PerspectiveCamera(
     0.1,
     1000
 );
-camera.position.set(0, 1.6, 5); // Spawn position
+camera.position.set(0, 1.6, 5); // Player spawn position
 
 // Add lighting
 const light = new THREE.DirectionalLight(0xffffff, 1);
@@ -23,6 +23,32 @@ scene.add(light);
 
 // Load GLTF models
 const loader = new THREE.GLTFLoader();
+
+// Add gun (weapon model) to the camera
+loader.load('assets/models/weapon.glb', (gltf) => {
+    const weapon = gltf.scene;
+    weapon.scale.set(0.5, 0.5, 0.5); // Scale the weapon
+    weapon.position.set(0.5, -0.5, -1); // Bottom-right position
+    weapon.rotation.set(0, Math.PI, 0); // Adjust rotation if needed
+    camera.add(weapon); // Attach the weapon to the camera
+});
+
+// Add ground for collision testing
+const groundGeometry = new THREE.PlaneGeometry(50, 50);
+const groundMaterial = new THREE.MeshBasicMaterial({ color: 0x008800 });
+const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+ground.rotation.x = -Math.PI / 2; // Make it horizontal
+ground.position.y = -1; // Slightly below the player
+scene.add(ground);
+
+// Add ground to collidable objects
+const collidableObjects = [ground];
+
+// Player movement and gravity
+const velocity = new THREE.Vector3(); // x, y, z movement
+const gravity = -0.01; // Strength of gravity
+const jumpStrength = 0.2; // How high the player can jump
+let isOnGround = false; // Check if the player is on the ground
 
 // Enemies
 const enemies = [];
@@ -40,10 +66,10 @@ function spawnEnemy(position) {
     });
 }
 
-// Spawn some enemies
+// Spawn random enemies
 for (let i = 0; i < 5; i++) {
-    const x = (Math.random() - 0.5) * 20; // Random X position
-    const z = (Math.random() - 0.5) * 20; // Random Z position
+    const x = (Math.random() - 0.5) * 20;
+    const z = (Math.random() - 0.5) * 20;
     spawnEnemy(new THREE.Vector3(x, 0, z));
 }
 
@@ -54,10 +80,9 @@ function updateEnemies() {
         direction.subVectors(camera.position, enemy.position).normalize();
         enemy.position.add(direction.multiplyScalar(enemySpeed));
 
-        // Check if the enemy reaches the player
         if (enemy.position.distanceTo(camera.position) < 1) {
             console.log("Enemy reached the player!");
-            // Add health reduction logic here if needed
+            // Add health reduction logic here
         }
     });
 }
@@ -68,13 +93,12 @@ const bulletSpeed = 0.5;
 
 // Shoot bullets
 function shootBullet() {
-    const geometry = new THREE.SphereGeometry(0.1, 8, 8); // Bullet shape
+    const geometry = new THREE.SphereGeometry(0.1, 8, 8);
     const material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
     const bullet = new THREE.Mesh(geometry, material);
 
     bullet.position.copy(camera.position);
 
-    // Get shooting direction
     const direction = new THREE.Vector3();
     camera.getWorldDirection(direction);
     bullet.userData.direction = direction;
@@ -101,7 +125,7 @@ function updateBullets() {
             }
         });
 
-        // Remove bullets if they go out of range
+        // Remove bullets if they go too far
         if (bullet.position.length() > 50) {
             scene.remove(bullet);
             bullets.splice(i, 1);
@@ -109,18 +133,75 @@ function updateBullets() {
     }
 }
 
-// Listen for shooting
+// Handle collisions with the environment
+function checkCollisions() {
+    const playerBox = new THREE.Box3().setFromObject(camera);
+
+    collidableObjects.forEach((object) => {
+        const objectBox = new THREE.Box3().setFromObject(object);
+
+        if (playerBox.intersectsBox(objectBox)) {
+            velocity.x = 0;
+            velocity.z = 0;
+
+            if (velocity.y < 0) {
+                isOnGround = true;
+                velocity.y = 0;
+            }
+        }
+    });
+}
+
+// Update player movement and gravity
+function updateMovement() {
+    const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
+    const right = new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion);
+
+    if (moveForward) velocity.add(forward.clone().multiplyScalar(0.1));
+    if (moveBackward) velocity.add(forward.clone().multiplyScalar(-0.1));
+    if (moveLeft) velocity.add(right.clone().multiplyScalar(-0.1));
+    if (moveRight) velocity.add(right.clone().multiplyScalar(0.1));
+
+    if (!isOnGround) velocity.y += gravity;
+
+    camera.position.add(velocity);
+    velocity.x *= 0.9;
+    velocity.z *= 0.9;
+
+    if (isOnGround) velocity.y = 0;
+}
+
+// Handle input
+let moveForward = false, moveBackward = false, moveLeft = false, moveRight = false;
+
+document.addEventListener("keydown", (event) => {
+    switch (event.code) {
+        case "KeyW": moveForward = true; break;
+        case "KeyS": moveBackward = true; break;
+        case "KeyA": moveLeft = true; break;
+        case "KeyD": moveRight = true; break;
+        case "Space":
+            if (isOnGround) {
+                velocity.y += jumpStrength;
+                isOnGround = false;
+            }
+            break;
+    }
+});
+
+document.addEventListener("keyup", (event) => {
+    switch (event.code) {
+        case "KeyW": moveForward = false; break;
+        case "KeyS": moveBackward = false; break;
+        case "KeyA": moveLeft = false; break;
+        case "KeyD": moveRight = false; break;
+    }
+});
+
+// Shoot bullets
 document.addEventListener("mousedown", shootBullet);
 
-// Player Movement
-const moveSpeed = 0.1;
-const rotationSpeed = 0.002;
-let moveForward = false;
-let moveBackward = false;
-let moveLeft = false;
-let moveRight = false;
-
-// Pointer Lock API for mouse control
+// Mouse look
 document.body.addEventListener("click", () => {
     canvas.requestPointerLock();
 });
@@ -133,69 +214,21 @@ document.addEventListener("pointerlockchange", () => {
     }
 });
 
-// Mouse look
 function onMouseMove(event) {
-    camera.rotation.y -= event.movementX * rotationSpeed;
-    camera.rotation.x -= event.movementY * rotationSpeed;
-    camera.rotation.x = Math.max(Math.min(camera.rotation.x, Math.PI / 2), -Math.PI / 2); // Limit vertical rotation
-}
-
-// Keyboard controls
-document.addEventListener("keydown", (event) => {
-    switch (event.code) {
-        case "KeyW":
-            moveForward = true;
-            break;
-        case "KeyS":
-            moveBackward = true;
-            break;
-        case "KeyA":
-            moveLeft = true;
-            break;
-        case "KeyD":
-            moveRight = true;
-            break;
-    }
-});
-
-document.addEventListener("keyup", (event) => {
-    switch (event.code) {
-        case "KeyW":
-            moveForward = false;
-            break;
-        case "KeyS":
-            moveBackward = false;
-            break;
-        case "KeyA":
-            moveLeft = false;
-            break;
-        case "KeyD":
-            moveRight = false;
-            break;
-    }
-});
-
-// Update player movement
-function updateMovement() {
-    const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
-    const right = new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion);
-
-    if (moveForward) camera.position.add(forward.multiplyScalar(moveSpeed));
-    if (moveBackward) camera.position.add(forward.multiplyScalar(-moveSpeed));
-    if (moveLeft) camera.position.add(right.multiplyScalar(-moveSpeed));
-    if (moveRight) camera.position.add(right.multiplyScalar(moveSpeed));
+    camera.rotation.y -= event.movementX * 0.002;
+    camera.rotation.x -= event.movementY * 0.002;
+    camera.rotation.x = Math.max(Math.min(camera.rotation.x, Math.PI / 2), -Math.PI / 2);
 }
 
 // Game loop
 function animate() {
     requestAnimationFrame(animate);
 
-    // Update game logic
     updateMovement();
+    checkCollisions();
     updateBullets();
     updateEnemies();
 
-    // Render the scene
     renderer.render(scene, camera);
 }
 
