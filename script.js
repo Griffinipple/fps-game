@@ -8,7 +8,6 @@ document.body.appendChild(renderer.domElement);
 
 // Create the scene and camera
 const scene = new THREE.Scene();
-scene.clear(); // Clear any previous objects in the scene
 
 const camera = new THREE.PerspectiveCamera(
     75,
@@ -16,48 +15,20 @@ const camera = new THREE.PerspectiveCamera(
     0.1,
     1000
 );
-camera.position.set(0, 10, 0); // Spawn high above the environment's center
+camera.position.set(0, 1.6, 5); // Start slightly above the ground
 
 // Add lighting
 const light = new THREE.DirectionalLight(0xffffff, 1);
 light.position.set(5, 10, 7.5);
 scene.add(light);
 
-// Load GLTF models
-const loader = new THREE.GLTFLoader();
-
-// Array to hold collidable objects
-const collidableObjects = [];
-let environmentLoaded = false; // Track if the environment is already loaded
-
-// Load the environment and add it to the scene
-loader.load('assets/models/environment.glb', (gltf) => {
-    if (environmentLoaded) return; // Prevent loading the environment multiple times
-    environmentLoaded = true;
-
-    const environment = gltf.scene;
-    environment.scale.set(10, 10, 10); // Scale the environment
-    environment.position.set(0, -5, 0); // Position it in the scene
-    scene.add(environment);
-
-    console.log("Environment successfully added to the scene");
-
-    // Add all meshes in the environment to collidable objects
-    environment.traverse((child) => {
-        if (child.isMesh) {
-            collidableObjects.push(child);
-        }
-    });
-});
-
-// Add gun (weapon model) to the camera
-loader.load('assets/models/weapon.glb', (gltf) => {
-    const weapon = gltf.scene;
-    weapon.scale.set(0.5, 0.5, 0.5); // Scale the weapon
-    weapon.position.set(0.5, -0.5, -1); // Bottom-right position
-    weapon.rotation.set(0, Math.PI, 0); // Adjust rotation if needed
-    camera.add(weapon); // Attach the weapon to the camera
-});
+// Create the ground
+const groundGeometry = new THREE.PlaneGeometry(50, 50); // Large ground plane
+const groundMaterial = new THREE.MeshStandardMaterial({ color: 0x008800 });
+const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+ground.rotation.x = -Math.PI / 2; // Rotate to lay flat
+ground.receiveShadow = true;
+scene.add(ground);
 
 // Player movement and gravity
 const velocity = new THREE.Vector3(); // x, y, z movement
@@ -86,102 +57,26 @@ document.addEventListener("pointerlockchange", () => {
     }
 });
 
-// Enemies
-const enemies = [];
-const enemySpeed = 0.02;
+// Gun model placeholder (simple box)
+const gunGeometry = new THREE.BoxGeometry(0.5, 0.3, 1); // Simple rectangular gun
+const gunMaterial = new THREE.MeshStandardMaterial({ color: 0x333333 });
+const gun = new THREE.Mesh(gunGeometry, gunMaterial);
+gun.position.set(0.5, -0.5, -1); // Bottom-right corner relative to the camera
+camera.add(gun);
 
-// Function to spawn enemies
-function spawnEnemy(position) {
-    loader.load('assets/models/enemy.glb', (gltf) => {
-        const enemy = gltf.scene;
-        enemy.scale.set(1, 1, 1);
-        enemy.position.copy(position);
-        enemy.name = "enemy";
-        scene.add(enemy);
-        enemies.push(enemy);
-    });
-}
-
-// Spawn random enemies
-for (let i = 0; i < 5; i++) {
-    const x = (Math.random() - 0.5) * 20;
-    const z = (Math.random() - 0.5) * 20;
-    spawnEnemy(new THREE.Vector3(x, 0, z));
-}
-
-// Move enemies toward the player
-function updateEnemies() {
-    enemies.forEach((enemy) => {
-        const direction = new THREE.Vector3();
-        direction.subVectors(camera.position, enemy.position).normalize();
-        enemy.position.add(direction.multiplyScalar(enemySpeed));
-
-        if (enemy.position.distanceTo(camera.position) < 1) {
-            console.log("Enemy reached the player!");
-            // Add health reduction logic here
-        }
-    });
-}
-
-// Bullets
-const bullets = [];
-const bulletSpeed = 0.5;
-
-// Shoot bullets
-function shootBullet() {
-    const geometry = new THREE.SphereGeometry(0.1, 8, 8);
-    const material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
-    const bullet = new THREE.Mesh(geometry, material);
-
-    bullet.position.copy(camera.position);
-
-    const direction = new THREE.Vector3();
-    camera.getWorldDirection(direction);
-    bullet.userData.direction = direction;
-
-    scene.add(bullet);
-    bullets.push(bullet);
-}
-
-// Update bullets
-function updateBullets() {
-    for (let i = bullets.length - 1; i >= 0; i--) {
-        const bullet = bullets[i];
-        bullet.position.add(bullet.userData.direction.clone().multiplyScalar(bulletSpeed));
-
-        // Check for collisions with enemies
-        enemies.forEach((enemy) => {
-            const distance = bullet.position.distanceTo(enemy.position);
-            if (distance < 1) {
-                console.log("Enemy hit!");
-                scene.remove(enemy); // Remove enemy
-                scene.remove(bullet); // Remove bullet
-                enemies.splice(enemies.indexOf(enemy), 1);
-                bullets.splice(i, 1);
-            }
-        });
-
-        // Remove bullets if they go too far
-        if (bullet.position.length() > 50) {
-            scene.remove(bullet);
-            bullets.splice(i, 1);
-        }
-    }
-}
-
-// Handle collisions with the environment
-function checkCollisions(newPosition) {
-    const playerBox = new THREE.Box3().setFromObject(camera);
-    playerBox.translate(newPosition); // Simulate movement to the new position
-
-    for (const object of collidableObjects) {
-        const objectBox = new THREE.Box3().setFromObject(object);
-        if (playerBox.intersectsBox(objectBox)) {
-            return true; // Collision detected
-        }
-    }
-    return false; // No collision
-}
+// Crosshair (HTML-based)
+const crosshair = document.createElement("div");
+crosshair.id = "crosshair";
+crosshair.style.position = "absolute";
+crosshair.style.top = "50%";
+crosshair.style.left = "50%";
+crosshair.style.width = "10px";
+crosshair.style.height = "10px";
+crosshair.style.background = "red";
+crosshair.style.borderRadius = "50%";
+crosshair.style.transform = "translate(-50%, -50%)";
+crosshair.style.zIndex = "1000";
+document.body.appendChild(crosshair);
 
 // Update player movement and gravity
 function updateMovement() {
@@ -197,34 +92,18 @@ function updateMovement() {
 
     if (!isOnGround) newVelocity.y += gravity; // Apply gravity if not grounded
 
-    // Calculate potential new position
-    const newPosition = newVelocity.clone();
+    // Simulate friction
+    newVelocity.x *= 0.9;
+    newVelocity.z *= 0.9;
 
-    // Check collisions for X and Z axes
-    const noCollisionX = !checkCollisions(new THREE.Vector3(newPosition.x, 0, 0));
-    const noCollisionZ = !checkCollisions(new THREE.Vector3(0, 0, newPosition.z));
+    // Move the camera
+    camera.position.add(newVelocity);
 
-    if (noCollisionX) camera.position.x += newVelocity.x;
-    if (noCollisionZ) camera.position.z += newVelocity.z;
-
-    // Check collision for Y axis (falling)
-    const noCollisionY = !checkCollisions(new THREE.Vector3(0, newVelocity.y, 0));
-    if (noCollisionY) {
-        camera.position.y += newVelocity.y;
-        isOnGround = false;
-    } else {
+    // Prevent sinking below the ground
+    if (camera.position.y < 1.6) {
+        camera.position.y = 1.6; // Set ground level
         isOnGround = true;
         velocity.y = 0; // Reset vertical velocity
-    }
-
-    // Apply friction
-    velocity.x *= 0.9;
-    velocity.z *= 0.9;
-
-    // Prevent sinking below the environment
-    if (camera.position.y < 1.6) {
-        camera.position.y = 1.6; // Set default ground level
-        isOnGround = true;
     }
 }
 
@@ -239,7 +118,7 @@ document.addEventListener("keydown", (event) => {
         case "KeyD": moveRight = true; break;
         case "Space":
             if (isOnGround) {
-                velocity.y += jumpStrength;
+                velocity.y += jumpStrength; // Jump
                 isOnGround = false;
             }
             break;
@@ -255,18 +134,11 @@ document.addEventListener("keyup", (event) => {
     }
 });
 
-// Shoot bullets
-document.addEventListener("mousedown", shootBullet);
-
 // Game loop
 function animate() {
     requestAnimationFrame(animate);
 
-    updateMovement(); // Check and apply player movement
-    checkCollisions(); // Ensure the player doesn't pass through objects
-    updateBullets(); // Handle bullets fired by the player
-    updateEnemies(); // Move enemies toward the player
-
+    updateMovement(); // Check and apply movement
     renderer.render(scene, camera); // Render the scene
 }
 
