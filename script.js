@@ -1,32 +1,53 @@
-// Basic setup (unchanged)
+// Get the canvas element
 const canvas = document.getElementById("gameCanvas");
+
+// Set up Three.js renderer
 const renderer = new THREE.WebGLRenderer({ canvas });
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
+// Create the scene and camera
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-camera.position.set(0, 1.6, 5); // Start position
+const camera = new THREE.PerspectiveCamera(
+    75,
+    window.innerWidth / window.innerHeight,
+    0.1,
+    1000
+);
+camera.position.set(0, 1.6, 5); // Slightly above the ground
 
-// Lighting
+// Add lighting
 const light = new THREE.DirectionalLight(0xffffff, 1);
 light.position.set(5, 10, 7.5);
 scene.add(light);
 
-// Load models (unchanged)
+// Load GLTF models with embedded textures
 const loader = new THREE.GLTFLoader();
+
+// Load weapon model
 loader.load('assets/models/weapon.glb', (gltf) => {
     const weapon = gltf.scene;
-    weapon.scale.set(0.5, 0.5, 0.5);
-    weapon.position.set(0, -0.5, -1.5);
-    camera.add(weapon); // Attach weapon to the camera
+    weapon.scale.set(0.5, 0.5, 0.5); // Scale down
+    weapon.position.set(0, -0.5, -1.5); // Attach weapon in front of camera
+    camera.add(weapon); // Attach weapon to camera for FPS view
     scene.add(camera);
 });
+
+// Load enemy model
 loader.load('assets/models/enemy.glb', (gltf) => {
     const enemy = gltf.scene;
-    enemy.scale.set(1, 1, 1);
-    enemy.position.set(0, 0, -10);
+    enemy.scale.set(1, 1, 1); // Default size
+    enemy.position.set(0, 0, -10); // Position enemy in front of the player
+    enemy.name = "enemy"; // Add a name for collision detection
     scene.add(enemy);
+});
+
+// Load environment model
+loader.load('assets/models/environment.glb', (gltf) => {
+    const environment = gltf.scene;
+    environment.scale.set(10, 10, 10); // Scale the environment
+    environment.position.set(0, -5, 0); // Position the environment
+    scene.add(environment);
 });
 
 // Movement variables
@@ -103,32 +124,18 @@ function updateMovement() {
     if (moveRight) camera.position.add(right.multiplyScalar(moveSpeed));
 }
 
----
-
-### **2. Shooting Mechanics**
-
-We'll use **raycasting** to detect collisions with enemies when the player shoots.
-
----
-
-#### Adding Shooting Mechanics to **script.js**
-```javascript
-// Raycaster for shooting
+// Shooting mechanics
 const raycaster = new THREE.Raycaster();
 const shootDirection = new THREE.Vector3();
 
-// Listen for shooting (mouse click)
 document.addEventListener("mousedown", () => {
-    // Get the direction the camera is facing
     camera.getWorldDirection(shootDirection);
     raycaster.set(camera.position, shootDirection);
 
-    // Check for intersections with objects in the scene
     const intersects = raycaster.intersectObjects(scene.children, true);
 
     if (intersects.length > 0) {
         const target = intersects[0].object;
-        // Remove the object if it's an enemy
         if (target.name === "enemy") {
             scene.remove(target);
             console.log("Enemy hit!");
@@ -136,22 +143,14 @@ document.addEventListener("mousedown", () => {
     }
 });
 
-// Mark the enemy model so we can detect it
-loader.load('assets/models/enemy.glb', (gltf) => {
-    const enemy = gltf.scene;
-    enemy.name = "enemy";
-    enemy.scale.set(1, 1, 1);
-    enemy.position.set(0, 0, -10);
-    scene.add(enemy);
-});
-
-// Game loop (unchanged)
+// Game loop
 function animate() {
     requestAnimationFrame(animate);
 
     // Update movement
     updateMovement();
 
+    // Render the scene
     renderer.render(scene, camera);
 }
 
