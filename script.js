@@ -112,14 +112,19 @@ function startGame() {
     const direction = new THREE.Vector3(); // Movement direction
 
     // Calculate forward and right vectors based on camera rotation
-    const forward = new THREE.Vector3(Math.sin(yaw), 0, -Math.cos(yaw));
-    const right = new THREE.Vector3(Math.sin(yaw + Math.PI / 2), 0, -Math.cos(yaw + Math.PI / 2));
+    const forward = new THREE.Vector3();
+    camera.getWorldDirection(forward);
+    forward.y = 0; // Ignore vertical movement
+    forward.normalize();
 
-    // Adjust movement direction based on key presses (reversed directions)
-    if (keys['w']) direction.add(forward); // Reverse forward
-    if (keys['s']) direction.add(forward.negate()); // Normal backward
-    if (keys['a']) direction.add(right.negate()); // Reverse right
-    if (keys['d']) direction.add(right); // Normal left
+    const right = new THREE.Vector3();
+    right.crossVectors(forward, new THREE.Vector3(0, 1, 0)); // Right is perpendicular to forward and up
+
+    // Adjust movement direction based on key presses
+    if (keys['w']) direction.add(forward); // Move forward
+    if (keys['s']) direction.add(forward.negate()); // Move backward
+    if (keys['a']) direction.add(right.negate()); // Move left
+    if (keys['d']) direction.add(right); // Move right
 
     // Normalize the direction vector (to avoid diagonal speed boost)
     direction.normalize();
