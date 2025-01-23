@@ -83,10 +83,15 @@ function startGame() {
     }
   });
 
-  // WASD Controls
+  // WASD and Jump Controls
   const keys = {};
-  document.addEventListener('keydown', (e) => (keys[e.key] = true));
-  document.addEventListener('keyup', (e) => (keys[e.key] = false));
+  document.addEventListener('keydown', (e) => (keys[e.key.toLowerCase()] = true));
+  document.addEventListener('keyup', (e) => (keys[e.key.toLowerCase()] = false));
+
+  let isJumping = false; // To prevent double-jumping
+  let velocityY = 0; // Vertical velocity for jumping
+  const gravity = -0.005; // Gravity affecting the player
+  const jumpStrength = 0.15; // Jump height
 
   function updatePlayer() {
     const speed = 0.1; // Movement speed
@@ -96,17 +101,36 @@ function startGame() {
     const forward = new THREE.Vector3(Math.sin(yaw), 0, -Math.cos(yaw));
     const right = new THREE.Vector3(Math.sin(yaw + Math.PI / 2), 0, -Math.cos(yaw + Math.PI / 2));
 
-    // Adjust movement direction based on key presses
-    if (keys['w']) direction.add(forward.negate()); // Move forward
-    if (keys['s']) direction.add(forward); // Move backward
-    if (keys['a']) direction.add(right); // Move left
-    if (keys['d']) direction.add(right.negate()); // Move right
+    // Adjust movement direction based on key presses (reversed directions)
+    if (keys['w']) direction.add(forward.negate()); // Reverse forward
+    if (keys['s']) direction.add(forward); // Normal backward
+    if (keys['a']) direction.add(right.negate()); // Reverse right
+    if (keys['d']) direction.add(right); // Normal left
 
     // Normalize the direction vector (to avoid diagonal speed boost)
     direction.normalize();
 
     // Move the camera
     camera.position.add(direction.multiplyScalar(speed));
+
+    // Handle jumping
+    if (keys[' ']) {
+      if (!isJumping) {
+        velocityY = jumpStrength; // Apply jump strength
+        isJumping = true; // Prevent double-jumping
+      }
+    }
+
+    // Apply gravity
+    velocityY += gravity;
+    camera.position.y += velocityY;
+
+    // Prevent falling through the ground
+    if (camera.position.y < 2) {
+      camera.position.y = 2; // Reset to ground level
+      isJumping = false; // Allow jumping again
+      velocityY = 0; // Reset vertical velocity
+    }
   }
 
   // Game Loop
