@@ -14,7 +14,7 @@ const camera = new THREE.PerspectiveCamera(
     0.1,
     1000
 );
-camera.position.set(0, 1.6, 5); // Player spawn position
+camera.position.set(0, 10, 0); // Spawn high above the environment's center
 
 // Add lighting
 const light = new THREE.DirectionalLight(0xffffff, 1);
@@ -162,22 +162,17 @@ function updateBullets() {
 }
 
 // Handle collisions with the environment
-function checkCollisions() {
+function checkCollisions(newPosition) {
     const playerBox = new THREE.Box3().setFromObject(camera);
+    playerBox.translate(newPosition); // Simulate movement to the new position
 
-    collidableObjects.forEach((object) => {
+    for (const object of collidableObjects) {
         const objectBox = new THREE.Box3().setFromObject(object);
-
         if (playerBox.intersectsBox(objectBox)) {
-            velocity.x = 0;
-            velocity.z = 0;
-
-            if (velocity.y < 0) {
-                isOnGround = true;
-                velocity.y = 0;
-            }
+            return true; // Collision detected
         }
-    });
+    }
+    return false; // No collision
 }
 
 // Update player movement and gravity
@@ -185,18 +180,44 @@ function updateMovement() {
     const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
     const right = new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion);
 
-    if (moveForward) velocity.add(forward.clone().multiplyScalar(0.1));
-    if (moveBackward) velocity.add(forward.clone().multiplyScalar(-0.1));
-    if (moveLeft) velocity.add(right.clone().multiplyScalar(-0.1));
-    if (moveRight) velocity.add(right.clone().multiplyScalar(0.1));
+    const newVelocity = velocity.clone();
 
-    if (!isOnGround) velocity.y += gravity;
+    if (moveForward) newVelocity.add(forward.clone().multiplyScalar(0.1));
+    if (moveBackward) newVelocity.add(forward.clone().multiplyScalar(-0.1));
+    if (moveLeft) newVelocity.add(right.clone().multiplyScalar(-0.1));
+    if (moveRight) newVelocity.add(right.clone().multiplyScalar(0.1));
 
-    camera.position.add(velocity);
+    if (!isOnGround) newVelocity.y += gravity; // Apply gravity if not grounded
+
+    // Calculate potential new position
+    const newPosition = newVelocity.clone();
+
+    // Check collisions for X and Z axes
+    const noCollisionX = !checkCollisions(new THREE.Vector3(newPosition.x, 0, 0));
+    const noCollisionZ = !checkCollisions(new THREE.Vector3(0, 0, newPosition.z));
+
+    if (noCollisionX) camera.position.x += newVelocity.x;
+    if (noCollisionZ) camera.position.z += newVelocity.z;
+
+    // Check collision for Y axis (falling)
+    const noCollisionY = !checkCollisions(new THREE.Vector3(0, newVelocity.y, 0));
+    if (noCollisionY) {
+        camera.position.y += newVelocity.y;
+        isOnGround = false;
+    } else {
+        isOnGround = true;
+        velocity.y = 0; // Reset vertical velocity
+    }
+
+    // Apply friction
     velocity.x *= 0.9;
     velocity.z *= 0.9;
 
-    if (isOnGround) velocity.y = 0;
+    // Prevent sinking below the environment
+    if (camera.position.y < 1.6) {
+        camera.position.y = 1.6; // Set default ground level
+        isOnGround = true;
+    }
 }
 
 // Handle input
@@ -233,12 +254,10 @@ document.addEventListener("mousedown", shootBullet);
 function animate() {
     requestAnimationFrame(animate);
 
-    updateMovement();
-    checkCollisions();
-    updateBullets();
-    updateEnemies();
+    updateMovement(); // Check and apply movement and gravity
+    updateBullets(); // Handle bullets
+    updateEnemies(); // Update enemies
 
     renderer.render(scene, camera);
 }
-
 animate();
