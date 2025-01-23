@@ -187,6 +187,8 @@ function startGame() {
     // Check for collision for vertical movement
     if (!checkCollision(new THREE.Vector3(camera.position.x, newYPosition, camera.position.z))) {
       camera.position.y = newYPosition;
+    } else {
+      velocityY = 0; // Stop vertical velocity on collision
     }
 
     // Prevent falling through the ground
