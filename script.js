@@ -85,24 +85,23 @@ function startGame() {
 
   function updatePlayer() {
     const speed = 0.1; // Movement speed
+    const direction = new THREE.Vector3(); // Movement direction
 
-    // Calculate movement directions
-    const forward = new THREE.Vector3(
-      Math.sin(yaw), 
-      0, 
-      -Math.cos(yaw)
-    );
-    const right = new THREE.Vector3(
-      Math.sin(yaw + Math.PI / 2),
-      0,
-      -Math.cos(yaw + Math.PI / 2)
-    );
+    // Calculate forward and right vectors based on camera rotation
+    const forward = new THREE.Vector3(Math.sin(yaw), 0, -Math.cos(yaw));
+    const right = new THREE.Vector3(Math.sin(yaw + Math.PI / 2), 0, -Math.cos(yaw + Math.PI / 2));
 
-    // Update position based on key presses
-    if (keys['w']) camera.position.add(forward.multiplyScalar(speed));
-    if (keys['s']) camera.position.add(forward.multiplyScalar(-speed));
-    if (keys['a']) camera.position.add(right.multiplyScalar(-speed));
-    if (keys['d']) camera.position.add(right.multiplyScalar(speed));
+    // Adjust movement direction based on key presses
+    if (keys['w']) direction.add(forward); // Move forward
+    if (keys['s']) direction.add(forward.negate()); // Move backward
+    if (keys['a']) direction.add(right.negate()); // Move left
+    if (keys['d']) direction.add(right); // Move right
+
+    // Normalize the direction vector (to avoid diagonal speed boost)
+    direction.normalize();
+
+    // Move the camera
+    camera.position.add(direction.multiplyScalar(speed));
   }
 
   // Game Loop
