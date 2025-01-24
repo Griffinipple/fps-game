@@ -92,13 +92,20 @@ function startGame() {
   const reloadTime = 1500; // 1.5 seconds
   let isReloading = false;
 
-  loader.load('/assets/models/weapon.glb', (gltf) => {
-    const gun = gltf.scene;
-    gun.scale.set(0.5, 0.5, 0.5);
-    gun.position.set(0.6, -0.5, -1);
-    gun.rotation.set(0, Math.PI / 2, 0);
-    camera.add(gun);
-  });
+  loader.load(
+    '/assets/models/weapon.glb',
+    (gltf) => {
+      const gun = gltf.scene;
+      gun.scale.set(0.5, 0.5, 0.5);
+      gun.position.set(0.6, -0.5, -1);
+      gun.rotation.set(0, Math.PI / 2, 0);
+      camera.add(gun);
+    },
+    undefined,
+    (error) => {
+      console.error('Failed to load the gun model:', error);
+    }
+);
 
   const projectiles = [];
 
