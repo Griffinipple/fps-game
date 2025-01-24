@@ -27,13 +27,36 @@ function startGame() {
       playerModel.rotation.y = camera.rotation.y;
       scene.add(playerModel);
     },
-    (xhr) => {
-      console.log(`Player model loading: ${(xhr.loaded / xhr.total) * 100}% loaded`);
-    },
+    undefined,
     (error) => {
       console.error('Failed to load the player model:', error);
     }
-);
+  );
+  
+    const hud = document.createElement('div');
+  hud.style.position = 'absolute';
+  hud.style.top = '10px';
+  hud.style.left = '10px';
+  hud.style.color = 'white';
+  hud.style.fontSize = '20px';
+  hud.style.zIndex = '1000';
+  document.body.appendChild(hud);
+
+  function updateHUD() {
+    hud.innerHTML = `Bullets: ${bulletsInClip} / ${clipSize} <br> Total Ammo: ${totalAmmo === Infinity ? '&#8734;' : totalAmmo}`;
+  }
+
+  updateHUD();
+  const collidableObjects = [];
+  // Create Scene, Camera, and Renderer
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+const clipSize = 30;
+let bulletsInClip = clipSize;
+let totalAmmo = Infinity;
+const reloadTime = 1500; // 1.5 seconds
+let isReloading = false;
+  const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('game-canvas') });
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.shadowMap.enabled = true;
 
@@ -123,13 +146,20 @@ function startGame() {
       gun.rotation.set(0, Math.PI / 2, 0);
       camera.add(gun);
     },
-    (xhr) => {
-      console.log(`Weapon model loading: ${(xhr.loaded / xhr.total) * 100}% loaded`);
-    },
+    undefined,
     (error) => {
-      console.error('Failed to load the weapon model:', error);
+      console.error('Failed to load the gun model:', error);
     }
 );
+
+  const projectiles = [];
+
+  function shoot() {
+    updateHUD();
+    if (bulletsInClip > 0 && !isReloading) {
+      bulletsInClip--;
+      const projectileGeometry = new THREE.SphereGeometry(0.1, 8, 8);
+      const projectileMaterial = new THREE.MeshStandardMaterial({ color: 0x888888 });
       const projectile = new THREE.Mesh(projectileGeometry, projectileMaterial);
 
       const barrelOffset = new THREE.Vector3(0, -0.5, -1);
