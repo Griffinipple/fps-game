@@ -131,9 +131,13 @@ const buildingPositions = [
       const platformMaterial = new THREE.MeshStandardMaterial({ color: 0xaaaaaa });
       const platform = new THREE.Mesh(platformGeometry, platformMaterial);
       platform.rotation.x = -Math.PI / 2; // Make it horizontal
-      platform.position.set(posX, height, posZ); // Position it at the top of the building
+      platform.position.set(building.position.x, building.position.y + height / 2, building.position.z); // Position it at the top of the building
       platform.receiveShadow = true;
       scene.add(platform);
+      // Add platform to collidable objects
+      const platformBox = new THREE.Box3().setFromObject(platform);
+      platform.userData.collisionBox = platformBox;
+      collidableObjects.push(platform);
       building.castShadow = true;
       building.receiveShadow = true;
       scene.add(building);
