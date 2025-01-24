@@ -59,15 +59,24 @@ function startGame() {
 
   const buildingHeights = [10, 15, 20, 25, 30]; // Possible heights for buildings
 
-  const buildingPositions = [
-    { x: -20, z: -20, width: 10, depth: 10 },
-    { x: 20, z: -20, width: 15, depth: 10 },
-    { x: -20, z: 20, width: 12, depth: 12 },
-    { x: 20, z: 20, width: 10, depth: 15 },
-  ];
+  const buildingPositions = [];
+  const gridSize = 10; // Number of rows and columns of buildings
+  const spacing = 20; // Spacing between buildings
+
+  // Generate positions for a grid of buildings
+  for (let i = -gridSize / 2; i < gridSize / 2; i++) {
+    for (let j = -gridSize / 2; j < gridSize / 2; j++) {
+      buildingPositions.push({
+        x: i * spacing,
+        z: j * spacing,
+        width: 10 + Math.random() * 5, // Random width between 10 and 15
+        depth: 10 + Math.random() * 5, // Random depth between 10 and 15
+      });
+    }
+  }
 
   buildingPositions.forEach((pos) => {
-    const height = buildingHeights[Math.floor(Math.random() * buildingHeights.length)]; // Random height
+    const height = Math.random() * 20 + 10; // Random height between 10 and 30
     const buildingGeometry = new THREE.BoxGeometry(pos.width, height, pos.depth);
     const building = new THREE.Mesh(buildingGeometry, buildingMaterial);
     building.position.set(pos.x, height / 2, pos.z); // Position above the ground
