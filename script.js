@@ -32,8 +32,16 @@ function startGame() {
     { x: 29.5, y: 2, z: 29.5 }    // Bottom-right corner
   ];
 
+  
+
   const randomSpawn = spawnPoints[Math.floor(Math.random() * spawnPoints.length)];
   camera.position.set(randomSpawn.x, randomSpawn.y, randomSpawn.z);
+
+  // Find the tallest tower (center tower in this case)
+  const centerX = 0;
+  const centerZ = 0;
+  const centerHeight = buildingPositions[2][2] * 2; // Height multiplier * 2
+  camera.lookAt(centerX, centerHeight / 2, centerZ);
   // Find the tallest tower (center tower in this case)
   const centerX = 0;
   const centerZ = 0;
@@ -87,13 +95,7 @@ function startGame() {
 
   // Add Buildings
   const buildingMaterial = new THREE.MeshStandardMaterial({ color: 0x333333 });
-  const buildingPositions = [
-    [1, 1, 1, 1, 1],
-    [1, 2.25, 2.25, 2.25, 1],
-    [1, 2.25, 3.5, 2.25, 1],
-    [1, 2.25, 2.25, 2.25, 1],
-    [1, 1, 1, 1, 1]
-  ];
+  
 
   buildingPositions.forEach((row, i) => {
     row.forEach((heightMultiplier, j) => {
