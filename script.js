@@ -96,97 +96,6 @@ function startGame() {
     renderer.setSize(window.innerWidth, window.innerHeight);
   });
 
-  // Gun and Ammo System
-  const loader = new THREE.GLTFLoader();
-  let bulletsInClip = 30;
-  let totalAmmo = Infinity; // Infinite total ammo for reloading
-  const clipSize = 30;
-  const reloadTime = 1500; // 1.5 seconds
-  let isReloading = false;
-
-  loader.load(
-    '/assets/models/weapon.glb',
-    (gltf) => {
-      const gun = gltf.scene;
-      gun.scale.set(0.5, 0.5, 0.5);
-      gun.position.set(0.6, -0.5, -1);
-      gun.rotation.set(0, Math.PI / 2, 0);
-      camera.add(gun);
-    },
-    undefined,
-    (error) => {
-      console.error('Failed to load the gun model:', error);
-    }
-);
-
-  const projectiles = [];
-
-  function shoot() {
-    if (bulletsInClip > 0 && !isReloading) {
-      bulletsInClip--;
-      const projectileGeometry = new THREE.SphereGeometry(0.1, 8, 8);
-      const projectileMaterial = new THREE.MeshStandardMaterial({ color: 0x888888 });
-      const projectile = new THREE.Mesh(projectileGeometry, projectileMaterial);
-
-      const barrelOffset = new THREE.Vector3(0, -0.5, -1);
-      projectile.position.copy(camera.localToWorld(barrelOffset));
-
-      const velocity = new THREE.Vector3();
-      camera.getWorldDirection(velocity);
-      velocity.multiplyScalar(1);
-
-      projectile.userData.velocity = velocity;
-      scene.add(projectile);
-      projectiles.push(projectile);
-    } else if (bulletsInClip === 0 && !isReloading) {
-      reload();
-    }
-  }
-
-  function reload() {
-    if (totalAmmo > 0 && !isReloading) {
-      isReloading = true;
-      setTimeout(() => {
-        const ammoToReload = Math.min(clipSize, totalAmmo);
-        bulletsInClip = ammoToReload;
-        totalAmmo = totalAmmo === Infinity ? Infinity : totalAmmo - ammoToReload;
-        isReloading = false;
-      }, reloadTime);
-    }
-  }
-
-  window.addEventListener('mousedown', () => {
-    shoot();
-  });
-
-  function updateProjectiles() {
-    for (let i = projectiles.length - 1; i >= 0; i--) {
-      const projectile = projectiles[i];
-      projectile.position.add(projectile.userData.velocity);
-
-      // Check collision with collidable objects
-      for (const object of collidableObjects) {
-        const objectBox = new THREE.Box3().setFromObject(object);
-        const projectileBox = new THREE.Box3().setFromObject(projectile);
-        if (objectBox.intersectsBox(projectileBox)) {
-          scene.remove(projectile);
-          projectiles.splice(i, 1);
-          break;
-        }
-      }
-
-      // Remove if out of bounds
-      if (
-        Math.abs(projectile.position.x) > 50 ||
-        Math.abs(projectile.position.y) > 50 ||
-        Math.abs(projectile.position.z) > 50
-      ) {
-        scene.remove(projectile);
-        projectiles.splice(i, 1);
-      }
-    }
-  }
-
   // Pointer Lock for Mouse Movement
   const canvas = renderer.domElement;
   canvas.requestPointerLock = canvas.requestPointerLock || canvas.mozRequestPointerLock;
@@ -211,10 +120,10 @@ function startGame() {
   document.addEventListener('keyup', (e) => (keys[e.key.toLowerCase()] = false));
 
   let velocityY = 0;
-  const gravity = -0.005;
+  const gravity = -0.01;
+  const movementSpeed = 0.2;
 
   function updatePlayer() {
-    const speed = 0.1;
     let direction = new THREE.Vector3();
 
     const forward = new THREE.Vector3();
@@ -231,12 +140,13 @@ function startGame() {
     if (keys['d']) direction.add(right);
 
     direction.normalize();
-    const nextPosition = camera.position.clone().add(direction.multiplyScalar(speed));
+
+    const nextPosition = camera.position.clone().add(direction.multiplyScalar(movementSpeed));
 
     let collision = false;
     for (const object of collidableObjects) {
       const objectBox = new THREE.Box3().setFromObject(object);
-      const playerBox = new THREE.Box3().setFromCenterAndSize(nextPosition, new THREE.Vector3(1, 1, 1));
+      const playerBox = new THREE.Box3().setFromCenterAndSize(nextPosition, new THREE.Vector3(1, 2, 1));
       if (objectBox.intersectsBox(playerBox)) {
         collision = true;
         break;
@@ -260,7 +170,6 @@ function startGame() {
   function animate() {
     requestAnimationFrame(animate);
     updatePlayer();
-    updateProjectiles();
     renderer.render(scene, camera);
   }
 
