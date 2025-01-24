@@ -231,7 +231,7 @@ function startGame() {
   const gravity = -0.005;
 
   function updatePlayer() {
-    const speed = 0.1;
+    const speed = 0.2; // Increased movement speed by 2x
     let direction = new THREE.Vector3();
 
     const forward = new THREE.Vector3();
