@@ -70,23 +70,7 @@ function startGame() {
     const height = buildingHeights[Math.floor(Math.random() * buildingHeights.length)]; // Random height
     const buildingGeometry = new THREE.BoxGeometry(pos.width, height, pos.depth);
     const building = new THREE.Mesh(buildingGeometry, buildingMaterial);
-    building.position.set(pos.x, height / 2, pos.z);
-
-    // Add two spherical objects near the base of the building
-    const sphereGeometry = new THREE.SphereGeometry(2, 16, 16);
-    const sphereMaterial = new THREE.MeshStandardMaterial({ color: 0x333333 }); // Match building color
-
-    const sphere1 = new THREE.Mesh(sphereGeometry, sphereMaterial);
-    sphere1.position.set(pos.x - pos.width / 3, 2, pos.z - pos.depth / 2);
-    sphere1.castShadow = true;
-    sphere1.receiveShadow = true;
-    scene.add(sphere1);
-
-    const sphere2 = new THREE.Mesh(sphereGeometry, sphereMaterial);
-    sphere2.position.set(pos.x + pos.width / 3, 2, pos.z - pos.depth / 2);
-    sphere2.castShadow = true;
-    sphere2.receiveShadow = true;
-    scene.add(sphere2); // Position above the ground
+    building.position.set(pos.x, height / 2, pos.z); // Position above the ground
     building.castShadow = true;
     building.receiveShadow = true;
     scene.add(building);
@@ -102,6 +86,7 @@ function startGame() {
     ladder.position.set(pos.x - pos.width / 2 - 1, height / 2, pos.z); // Position ladder on the side of the building
     ladder.castShadow = true;
     ladder.receiveShadow = true;
+    ladder.userData.isLadder = true; // Add user data to identify ladders
     scene.add(ladder);
   });
 
@@ -109,12 +94,13 @@ function startGame() {
 
 
   function checkLadderCollision() {
-    const ladders = scene.children.filter((child) => child.geometry && child.geometry.type === 'BoxGeometry' && child.material.color.getHex() === 0x00ff00);
-    for (const ladder of ladders) {
-      const ladderBox = new THREE.Box3().setFromObject(ladder);
-      const playerBox = new THREE.Box3().setFromCenterAndSize(camera.position, new THREE.Vector3(1, 1, 1));
-      if (ladderBox.intersectsBox(playerBox)) {
-        return true;
+    const playerBox = new THREE.Box3().setFromCenterAndSize(camera.position, new THREE.Vector3(1, 1, 1));
+    for (const object of collidableObjects) {
+      if (object.userData.isLadder) {
+        const ladderBox = new THREE.Box3().setFromObject(object);
+        if (ladderBox.intersectsBox(playerBox)) {
+          return true;
+        }
       }
     }
     return false;
@@ -260,9 +246,6 @@ function startGame() {
         velocityY += 0.01; // Gradually increase upward velocity while holding space
       } else {
         velocityY = 0; // Stop upward movement at the top of the ladder
-        camera.position.y = maxLadderHeight; // Snap to the top of the ladder
-      }
-    }
         camera.position.y = maxLadderHeight; // Snap to the top of the ladder
       }
     }
