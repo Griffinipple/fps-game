@@ -99,6 +99,11 @@ const buildingPositions = [
     wallMesh.position.set(...wall.position);
     wallMesh.rotation.set(...wall.rotation);
     scene.add(wallMesh);
+
+    // Add wall to collidable objects
+    const wallBox = new THREE.Box3().setFromObject(wallMesh);
+    wallMesh.userData.collisionBox = wallBox;
+    collidableObjects.push(wallMesh);
   });
 
   // Add ceiling
@@ -131,7 +136,7 @@ const buildingPositions = [
       const platformMaterial = new THREE.MeshStandardMaterial({ color: 0xaaaaaa });
       const platform = new THREE.Mesh(platformGeometry, platformMaterial);
       platform.rotation.x = -Math.PI / 2; // Make it horizontal
-      platform.position.set(building.position.x, building.position.y + height / 2, building.position.z); // Position it at the top of the building
+      platform.position.set(building.position.x, building.position.y + height / 2 + 0.1, building.position.z); // Position it at the top of the building
       platform.receiveShadow = true;
       scene.add(platform);
       // Add platform to collidable objects
