@@ -52,39 +52,49 @@ function startGame() {
   ground.receiveShadow = true;
   scene.add(ground);
 
-  // Add Rectangular Buildings
+  // Add Rectangular Buildings with Ladders
   const buildingMaterial = new THREE.MeshStandardMaterial({ color: 0x333333 }); // Dark gray buildings
+  const ladderMaterial = new THREE.MeshStandardMaterial({ color: 0xaaaaaa }); // Light gray ladders
+
+  const buildingHeights = [10, 15, 20, 25, 30]; // Possible heights for buildings
+
   const buildingPositions = [
-    { x: -20, z: -20, width: 10, height: 15, depth: 10 },
-    { x: 20, z: -20, width: 15, height: 20, depth: 10 },
-    { x: -20, z: 20, width: 12, height: 18, depth: 12 },
-    { x: 20, z: 20, width: 10, height: 12, depth: 15 },
+    { x: -20, z: -20, width: 10, depth: 10 },
+    { x: 20, z: -20, width: 15, depth: 10 },
+    { x: -20, z: 20, width: 12, depth: 12 },
+    { x: 20, z: 20, width: 10, depth: 15 },
   ];
 
   buildingPositions.forEach((pos) => {
-    const buildingGeometry = new THREE.BoxGeometry(pos.width, pos.height, pos.depth);
+    const height = buildingHeights[Math.floor(Math.random() * buildingHeights.length)]; // Random height
+    const buildingGeometry = new THREE.BoxGeometry(pos.width, height, pos.depth);
     const building = new THREE.Mesh(buildingGeometry, buildingMaterial);
-    building.position.set(pos.x, pos.height / 2, pos.z); // Position above the ground
+    building.position.set(pos.x, height / 2, pos.z); // Position above the ground
     building.castShadow = true;
     building.receiveShadow = true;
     scene.add(building);
-  });
 
-  // Add Ladder
-  const ladderGeometry = new THREE.BoxGeometry(2, 10, 0.5); // Thin rectangular ladder
-  const ladderMaterial = new THREE.MeshStandardMaterial({ color: 0xaaaaaa }); // Light gray
-  const ladder = new THREE.Mesh(ladderGeometry, ladderMaterial);
-  ladder.position.set(0, 5, 0); // Place ladder at center of the scene
-  ladder.castShadow = true;
-  ladder.receiveShadow = true;
-  scene.add(ladder);
+    // Add a ladder to one side of the building
+    const ladderGeometry = new THREE.BoxGeometry(2, height, 0.5);
+    const ladder = new THREE.Mesh(ladderGeometry, ladderMaterial);
+    ladder.position.set(pos.x - pos.width / 2 - 1, height / 2, pos.z); // Position ladder on the side of the building
+    ladder.castShadow = true;
+    ladder.receiveShadow = true;
+    scene.add(ladder);
+  });
 
   let onLadder = false;
 
   function checkLadderCollision() {
-    const ladderBox = new THREE.Box3().setFromObject(ladder);
-    const playerBox = new THREE.Box3().setFromCenterAndSize(camera.position, new THREE.Vector3(1, 1, 1));
-    return ladderBox.intersectsBox(playerBox);
+    const ladders = scene.children.filter((child) => child.geometry && child.geometry.type === 'BoxGeometry' && child.geometry.parameters.depth === 0.5);
+    for (const ladder of ladders) {
+      const ladderBox = new THREE.Box3().setFromObject(ladder);
+      const playerBox = new THREE.Box3().setFromCenterAndSize(camera.position, new THREE.Vector3(1, 1, 1));
+      if (ladderBox.intersectsBox(playerBox)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   // Load and Add Gun Model to the Bottom Right of the Screen
