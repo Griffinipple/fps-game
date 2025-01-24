@@ -116,19 +116,7 @@ function startGame() {
     });
   }
 
-  buildingPositions.forEach((pos) => {
-    const height = Math.random() * 20 + 10;
-    const buildingGeometry = new THREE.BoxGeometry(pos.width, height, pos.depth);
-    const building = new THREE.Mesh(buildingGeometry, buildingMaterial);
-    building.position.set(pos.x, height / 2, pos.z);
-    building.castShadow = true;
-    building.receiveShadow = true;
-    scene.add(building);
-
-    const buildingBox = new THREE.Box3().setFromObject(building);
-    building.userData.collisionBox = buildingBox;
-    collidableObjects.push(building);
-  });
+  
 
   // Resize Event Listener
   window.addEventListener('resize', () => {
