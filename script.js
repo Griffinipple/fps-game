@@ -2,6 +2,7 @@
 const lobby = document.getElementById('lobby');
 const playButton = document.getElementById('play-button');
 const gameDiv = document.getElementById('game');
+const collidableObjects = [];
 
 // Play button click event
 playButton.addEventListener('click', () => {
