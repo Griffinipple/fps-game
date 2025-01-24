@@ -90,7 +90,7 @@ function startGame() {
   });
 
   let onLadder = false;
-  collidableObjects = [];
+
 
   function checkLadderCollision() {
     const ladders = scene.children.filter((child) => child.geometry && child.geometry.type === 'BoxGeometry' && child.material.color.getHex() === 0x00ff00);
