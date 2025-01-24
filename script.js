@@ -16,6 +16,22 @@ playButton.addEventListener('click', () => {
 });
 
 function startGame() {
+  let playerModel;
+  const loader = new THREE.GLTFLoader();
+  loader.load(
+    '/assets/models/player.glb',
+    (gltf) => {
+      playerModel = gltf.scene;
+      playerModel.scale.set(1, 1, 1);
+      playerModel.position.set(camera.position.x, camera.position.y - 1, camera.position.z);
+      playerModel.rotation.y = camera.rotation.y;
+      scene.add(playerModel);
+    },
+    undefined,
+    (error) => {
+      console.error('Failed to load the player model:', error);
+    }
+  );
   let bulletsInClip = 30;
   let totalAmmo = Infinity; // Infinite total ammo for reloading
   const clipSize = 30;
@@ -236,6 +252,10 @@ function startGame() {
   const gravity = -0.005;
 
   function updatePlayer() {
+    if (playerModel) {
+      playerModel.position.set(camera.position.x, camera.position.y - 1, camera.position.z);
+      playerModel.rotation.y = camera.rotation.y;
+    }
     const speed = 0.2; // Increased movement speed by 2x
     let direction = new THREE.Vector3();
 
