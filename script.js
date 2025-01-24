@@ -218,14 +218,7 @@ let canDoubleJump = false; // Track double jump ability
 
     let collision = false;
     for (const object of collidableObjects) {
-      const objectBox = new THREE.Box3().setFromObject(object);
-      const playerBox = new THREE.Box3().setFromCenterAndSize(nextPosition, new THREE.Vector3(1, 2, 1));
-
-      // Check for collision with the sides of the object
-      if (objectBox.intersectsBox(playerBox)) {
-        collision = true;
-        break;
-      }
+      
     }
 
     for (const platform of verticalCollidableObjects) {
@@ -242,15 +235,10 @@ let canDoubleJump = false; // Track double jump ability
         velocityY = 0; // Reset vertical velocity
         canDoubleJump = true; // Allow double jump again
         collision = true;
-      }
-      const objectBox = new THREE.Box3().setFromObject(object);
-      const playerBox = new THREE.Box3().setFromCenterAndSize(nextPosition, new THREE.Vector3(1, 2, 1));
-
-      // Check for collision with the sides of the object
-      if (objectBox.intersectsBox(playerBox)) {
-        collision = true;
         break;
       }
+    }
+      
 
       // Check if the player is landing on top of the object
       if (
