@@ -16,6 +16,20 @@ playButton.addEventListener('click', () => {
 });
 
 function startGame() {
+  const hud = document.createElement('div');
+  hud.style.position = 'absolute';
+  hud.style.top = '10px';
+  hud.style.left = '10px';
+  hud.style.color = 'white';
+  hud.style.fontSize = '20px';
+  hud.style.zIndex = '1000';
+  document.body.appendChild(hud);
+
+  function updateHUD() {
+    hud.innerHTML = `Bullets: ${bulletsInClip} / ${clipSize} <br> Total Ammo: ${totalAmmo === Infinity ? '&#8734;' : totalAmmo}`;
+  }
+
+  updateHUD();
   const collidableObjects = [];
   // Create Scene, Camera, and Renderer
   const scene = new THREE.Scene();
@@ -123,6 +137,7 @@ function startGame() {
   const projectiles = [];
 
   function shoot() {
+    updateHUD();
     if (bulletsInClip > 0 && !isReloading) {
       bulletsInClip--;
       const projectileGeometry = new THREE.SphereGeometry(0.1, 8, 8);
@@ -145,6 +160,7 @@ function startGame() {
   }
 
   function reload() {
+    updateHUD();
     if (totalAmmo > 0 && !isReloading) {
       isReloading = true;
       setTimeout(() => {
@@ -259,6 +275,7 @@ function startGame() {
 
   // Game Loop
   function animate() {
+    updateHUD();
     requestAnimationFrame(animate);
     updatePlayer();
     updateProjectiles();
