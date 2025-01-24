@@ -78,17 +78,7 @@ function startGame() {
   ceiling.position.set(0, 102, 0);
   ceiling.rotation.x = Math.PI / 2;
   scene.add(ceiling);
-  boxGeometry.deleteAttribute('position');
-  const vertices = [
-    -51, 0, -51,   51, 0, -51,   51, 102, -51,   -51, 102, -51,  // Front
-    -51, 0,  51,   51, 0,  51,   51, 102,  51,   -51, 102,  51,  // Back
-    -51, 0, -51,   -51, 0,  51,   -51, 102,  51,   -51, 102, -51, // Left
-     51, 0, -51,    51, 0,  51,    51, 102,  51,    51, 102, -51, // Right
-  ];
-  const boxMaterial = new THREE.MeshBasicMaterial({ color: 0xadd8e6, side: THREE.BackSide });
-  const surroundingBox = new THREE.Mesh(boxGeometry, boxMaterial);
-  surroundingBox.position.set(0, 51, 0); // Centered around the platform
-  scene.add(surroundingBox);
+  
 
   // Add Buildings
   const buildingMaterial = new THREE.MeshStandardMaterial({ color: 0x333333 });
