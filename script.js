@@ -116,10 +116,19 @@ function startGame() {
 
   // WASD Movement with Gravity
   const keys = {};
-  document.addEventListener('keydown', (e) => (keys[e.key.toLowerCase()] = true));
+  document.addEventListener('keydown', (e) => {
+    keys[e.key.toLowerCase()] = true;
+    if (e.key.toLowerCase() === ' ' && velocityY === 0) {
+      velocityY = 0.2; // Initial jump
+    } else if (e.key.toLowerCase() === ' ' && canDoubleJump) {
+      velocityY = 0.2; // Double jump
+      canDoubleJump = false;
+    }
+  });
   document.addEventListener('keyup', (e) => (keys[e.key.toLowerCase()] = false));
 
   let velocityY = 0;
+let canDoubleJump = false; // Track double jump ability
   const gravity = -0.01;
   const movementSpeed = 0.2;
 
@@ -163,6 +172,7 @@ function startGame() {
     if (camera.position.y < groundLevel) {
       camera.position.y = groundLevel;
       velocityY = 0;
+      canDoubleJump = true; // Reset double jump when touching the ground
     }
   }
 
