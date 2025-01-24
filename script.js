@@ -26,10 +26,10 @@ function startGame() {
 
   // Position the camera
   const spawnPoints = [
-    { x: -45, y: 2, z: -45 }, // Top-left corner
-    { x: 45, y: 2, z: -45 },  // Top-right corner
-    { x: -45, y: 2, z: 45 },  // Bottom-left corner
-    { x: 45, y: 2, z: 45 }    // Bottom-right corner
+    { x: -48.5, y: 2, z: -48.5 }, // Top-left corner
+    { x: 48.5, y: 2, z: -48.5 },  // Top-right corner
+    { x: -48.5, y: 2, z: 48.5 },  // Bottom-left corner
+    { x: 48.5, y: 2, z: 48.5 }    // Bottom-right corner
   ];
 
   const randomSpawn = spawnPoints[Math.floor(Math.random() * spawnPoints.length)];
