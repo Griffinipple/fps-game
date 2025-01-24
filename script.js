@@ -266,7 +266,7 @@ function startGame() {
         camera.position.y = maxLadderHeight; // Snap to the top of the ladder
       }
     }
-  }
+  
 
   // Game Loop
   function animate() {
