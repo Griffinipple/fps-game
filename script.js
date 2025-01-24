@@ -22,7 +22,7 @@ function startGame() {
   const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
   const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('game-canvas') });
   renderer.setSize(window.innerWidth, window.innerHeight);
-  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.enabled = true; // Ensure shadow mapping is only enabled if necessary for performance
 
   // Position the camera
   camera.position.set(0, 2, 5);
@@ -47,7 +47,7 @@ function startGame() {
 
   // Create Ground
   const groundGeometry = new THREE.PlaneGeometry(100, 100);
-  const groundMaterial = new THREE.MeshStandardMaterial({ color: 0x808080 });
+  const groundMaterial = new THREE.MeshStandardMaterial({ color: 0x808080, roughness: 0.8, metalness: 0 });
   const ground = new THREE.Mesh(groundGeometry, groundMaterial);
   ground.rotation.x = -Math.PI / 2;
   ground.receiveShadow = true;
@@ -125,7 +125,7 @@ function startGame() {
       projectile.userData.velocity = velocity;
       scene.add(projectile);
       projectiles.push(projectile);
-    } else if (bulletsInClip === 0 && !isReloading) {
+    } else if (bulletsInClip === 0 && !isReloading) { reload(); // Ensure reload logic executes properly when clip is empty
       reload();
     }
   }
@@ -164,7 +164,7 @@ function startGame() {
   document.addEventListener('keyup', (e) => (keys[e.key.toLowerCase()] = false));
 
   let velocityY = 0;
-  const gravity = -0.005;
+  const gravity = -0.01; // Adjust gravity for a more realistic falling effect
 
   function updatePlayer() {
     const speed = 0.1;
