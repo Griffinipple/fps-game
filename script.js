@@ -38,12 +38,7 @@ function startGame() {
   directionalLight.castShadow = true;
   scene.add(directionalLight);
 
-  // Add a Sun Sphere
-  const sunGeometry = new THREE.SphereGeometry(3, 32, 32);
-  const sunMaterial = new THREE.MeshBasicMaterial({ color: 0xffcc00 });
-  const sun = new THREE.Mesh(sunGeometry, sunMaterial);
-  sun.position.set(0, 50, 0);
-  scene.add(sun);
+  
 
   // Create Ground
   const groundGeometry = new THREE.PlaneGeometry(100, 100);
@@ -56,8 +51,8 @@ function startGame() {
   // Add Buildings
   const buildingMaterial = new THREE.MeshStandardMaterial({ color: 0x333333 });
   const buildingPositions = [];
-  const gridSize = 10;
-  const spacing = 20;
+  const gridSize = 2;
+  const spacing = 25;
 
   for (let i = -gridSize / 2; i < gridSize / 2; i++) {
     for (let j = -gridSize / 2; j < gridSize / 2; j++) {
@@ -94,6 +89,7 @@ function startGame() {
   // Gun and Ammo System
   const loader = new THREE.GLTFLoader();
   let bulletsInClip = 30;
+let totalAmmo = Infinity; // Infinite total ammo for reloading
   const clipSize = 30;
   const reloadTime = 1500; // 1.5 seconds
   let isReloading = false;
@@ -131,11 +127,16 @@ function startGame() {
   }
 
   function reload() {
+  if (totalAmmo > 0 && !isReloading) {
     isReloading = true;
     setTimeout(() => {
-      bulletsInClip = clipSize;
+      const ammoToReload = Math.min(clipSize, totalAmmo);
+      bulletsInClip = ammoToReload;
+      totalAmmo = totalAmmo === Infinity ? Infinity : totalAmmo - ammoToReload;
       isReloading = false;
     }, reloadTime);
+  }
+}, reloadTime);
   }
 
   window.addEventListener('mousedown', () => {
@@ -147,6 +148,18 @@ function startGame() {
       const projectile = projectiles[i];
       projectile.position.add(projectile.userData.velocity);
 
+      // Check collision with collidable objects
+      for (const object of collidableObjects) {
+        const objectBox = new THREE.Box3().setFromObject(object);
+        const projectileBox = new THREE.Box3().setFromObject(projectile);
+        if (objectBox.intersectsBox(projectileBox)) {
+          scene.remove(projectile);
+          projectiles.splice(i, 1);
+          break;
+        }
+      }
+
+      // Remove if out of bounds
       if (
         Math.abs(projectile.position.x) > 50 ||
         Math.abs(projectile.position.y) > 50 ||
@@ -155,6 +168,8 @@ function startGame() {
         scene.remove(projectile);
         projectiles.splice(i, 1);
       }
+    }
+  }
     }
   }
 
