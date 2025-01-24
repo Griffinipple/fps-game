@@ -99,7 +99,7 @@ function startGame() {
     row.forEach((heightMultiplier, j) => {
       const posX = (i - 5) * 20;
       const posZ = (j - 5) * 20;
-      const height = heightMultiplier * 5;
+      const height = heightMultiplier * 2;
       const width = 10;
       const depth = 10;
       const buildingGeometry = new THREE.BoxGeometry(width, height, depth);
