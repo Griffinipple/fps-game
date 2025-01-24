@@ -25,7 +25,15 @@ function startGame() {
   renderer.shadowMap.enabled = true;
 
   // Position the camera
-  camera.position.set(50, 2, 50);
+  const spawnPoints = [
+    { x: -40, y: 2, z: -40 },
+    { x: 40, y: 2, z: -40 },
+    { x: -40, y: 2, z: 40 },
+    { x: 40, y: 2, z: 40 }
+  ];
+
+  const randomSpawn = spawnPoints[Math.floor(Math.random() * spawnPoints.length)];
+  camera.position.set(randomSpawn.x, randomSpawn.y, randomSpawn.z);
   camera.rotation.order = "YXZ";
 
   // Add Ambient Light
