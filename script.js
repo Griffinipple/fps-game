@@ -5,7 +5,7 @@ class Game {
     this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
     this.renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('game-canvas') });
     this.loader = new THREE.GLTFLoader();
-    this.player = new Player(this.camera, this.scene);
+    this.player = new Player(this.camera, this.scene, this.loader);
     this.environment = new Environment(this.scene);
     this.hud = new HUD();
     this.projectiles = [];
@@ -26,7 +26,6 @@ class Game {
   setupRenderer() {
     this.renderer.setSize(window.innerWidth, window.innerHeight);
     this.renderer.shadowMap.enabled = true;
-    this.renderer.setClearColor(0x000000); // Black canvas background
     window.addEventListener('resize', () => {
       this.camera.aspect = window.innerWidth / window.innerHeight;
       this.camera.updateProjectionMatrix();
@@ -79,9 +78,10 @@ class Game {
 }
 
 class Player {
-  constructor(camera, scene) {
+  constructor(camera, scene, loader) {
     this.camera = camera;
     this.scene = scene;
+    this.loader = loader;
     this.keys = {};
     this.velocityY = 0;
     this.gravity = -0.005;
@@ -89,6 +89,7 @@ class Player {
     this.totalAmmo = Infinity;
     this.clipSize = 30;
     this.reloadTime = 1500; // 1.5 seconds
+    this.gun = null;
     this.playerModel = null;
   }
 
@@ -103,11 +104,17 @@ class Player {
     this.camera.position.set(randomSpawn.x, randomSpawn.y, randomSpawn.z);
     this.camera.rotation.order = "YXZ";
 
-    const geometry = new THREE.SphereGeometry(0.5, 16, 16);
-    const material = new THREE.MeshStandardMaterial({ color: 0xff0000 });
-    this.playerModel = new THREE.Mesh(geometry, material);
-    this.playerModel.position.copy(this.camera.position);
-    this.scene.add(this.playerModel);
+    this.loader.load('/assets/models/player.glb', (gltf) => {
+      this.playerModel = gltf.scene;
+      this.scene.add(this.playerModel);
+    });
+
+    this.loader.load('/assets/models/weapon.glb', (gltf) => {
+      this.gun = gltf.scene;
+      this.gun.scale.set(0.5, 0.5, 0.5);
+      this.gun.position.set(0.6, -0.5, -1);
+      this.camera.add(this.gun);
+    });
   }
 
   shoot(projectiles, collidableObjects) {
@@ -237,9 +244,6 @@ class HUD {
     this.hud.style.left = '10px';
     this.hud.style.color = 'white';
     this.hud.style.fontSize = '20px';
-    this.hud.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
-    this.hud.style.padding = '10px';
-    this.hud.style.borderRadius = '5px';
     this.hud.style.zIndex = '1000';
     document.body.appendChild(this.hud);
   }
@@ -291,46 +295,3 @@ playButton.addEventListener('click', () => {
   document.getElementById('game').style.display = 'block';
   new Game();
 });
-
-// Add Favicon
-const link = document.createElement('link');
-link.rel = 'icon';
-link.type = 'image/jpeg';
-link.href = 'favicon.jpg';
-document.head.appendChild(link);
-
-// Style Adjustments for Game and Lobby
-const style = document.createElement('style');
-style.textContent = `
-  #game-canvas {
-    display: block;
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background-color: black;
-  }
-  #lobby {
-    display: block;
-    position: absolute;
-    width: 100vw;
-    height: 100vh;
-    background-color: rgba(0, 0, 0, 0.7);
-    color: white;
-    font-size: 2rem;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-  }
-  #game {
-    display: none;
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-  }
-`;
-document.head.appendChild(style);
