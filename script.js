@@ -54,7 +54,7 @@ function startGame() {
 
   // Add Rectangular Buildings with Ladders
   const buildingMaterial = new THREE.MeshStandardMaterial({ color: 0x333333 }); // Dark gray buildings
-  const ladderMaterial = new THREE.MeshStandardMaterial({ color: 0xaaaaaa }); // Light gray ladders
+  const ladderMaterial = new THREE.MeshStandardMaterial({ color: 0x00ff00 }); // Light gray ladders
 
   const buildingHeights = [10, 15, 20, 25, 30]; // Possible heights for buildings
 
@@ -73,6 +73,11 @@ function startGame() {
     building.castShadow = true;
     building.receiveShadow = true;
     scene.add(building);
+
+    // Add collision detection for the building
+    const buildingBox = new THREE.Box3().setFromObject(building);
+    building.userData.collisionBox = buildingBox;
+    collidableObjects.push(building);
 
     // Add a ladder to one side of the building
     const ladderGeometry = new THREE.BoxGeometry(2, height, 0.5);
