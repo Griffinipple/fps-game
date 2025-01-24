@@ -16,20 +16,6 @@ playButton.addEventListener('click', () => {
 });
 
 function startGame() {
-  const hud = document.createElement('div');
-  hud.style.position = 'absolute';
-  hud.style.top = '10px';
-  hud.style.left = '10px';
-  hud.style.color = 'white';
-  hud.style.fontSize = '20px';
-  hud.style.zIndex = '1000';
-  document.body.appendChild(hud);
-
-  function updateHUD() {
-    hud.innerHTML = `Bullets: ${bulletsInClip} / ${clipSize} <br> Total Ammo: ${totalAmmo === Infinity ? '&#8734;' : totalAmmo}`;
-  }
-
-  updateHUD();
   const collidableObjects = [];
   // Create Scene, Camera, and Renderer
   const scene = new THREE.Scene();
@@ -76,17 +62,12 @@ function startGame() {
 
   for (let i = -gridSize / 2; i < gridSize / 2; i++) {
     for (let j = -gridSize / 2; j < gridSize / 2; j++) {
-      const posX = i * spacing;
-      const posZ = j * spacing;
-      // Ensure buildings are within the platform bounds
-      if (posX >= -50 && posX <= 50 && posZ >= -50 && posZ <= 50) {
-        buildingPositions.push({
-          x: posX,
-          z: posZ,
-          width: 10 + Math.random() * 5,
-          depth: 10 + Math.random() * 5,
-        });
-      }
+      buildingPositions.push({
+        x: i * spacing,
+        z: j * spacing,
+        width: 10 + Math.random() * 5,
+        depth: 10 + Math.random() * 5,
+      });
     }
   }
 
@@ -137,7 +118,6 @@ function startGame() {
   const projectiles = [];
 
   function shoot() {
-    updateHUD();
     if (bulletsInClip > 0 && !isReloading) {
       bulletsInClip--;
       const projectileGeometry = new THREE.SphereGeometry(0.1, 8, 8);
@@ -160,7 +140,6 @@ function startGame() {
   }
 
   function reload() {
-    updateHUD();
     if (totalAmmo > 0 && !isReloading) {
       isReloading = true;
       setTimeout(() => {
@@ -231,7 +210,7 @@ function startGame() {
   const gravity = -0.005;
 
   function updatePlayer() {
-    const speed = 0.2; // Increased movement speed by 2x
+    const speed = 0.1;
     let direction = new THREE.Vector3();
 
     const forward = new THREE.Vector3();
@@ -275,7 +254,6 @@ function startGame() {
 
   // Game Loop
   function animate() {
-    updateHUD();
     requestAnimationFrame(animate);
     updatePlayer();
     updateProjectiles();
