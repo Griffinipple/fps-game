@@ -287,3 +287,10 @@ playButton.addEventListener('click', () => {
   document.getElementById('game').style.display = 'block';
   new Game();
 });
+
+// Add Favicon
+const link = document.createElement('link');
+link.rel = 'icon';
+link.type = 'image/jpeg';
+link.href = 'favicon.jpg';
+document.head.appendChild(link);
