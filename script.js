@@ -39,37 +39,36 @@ function startGame() {
 
   // Add a Sun Sphere
   const sunGeometry = new THREE.SphereGeometry(3, 32, 32); // Increase the size of the sun
-  const sunMaterial = new THREE.MeshBasicMaterial({ color: 0xffcc00, emissive: 0xffdd88 });
+  const sunMaterial = new THREE.MeshBasicMaterial({ color: 0xffcc00 });
   const sun = new THREE.Mesh(sunGeometry, sunMaterial);
   sun.position.set(0, 50, 0); // Match the position of the directional light
   scene.add(sun);
 
-  // Create Ground
-  const groundGeometry = new THREE.PlaneGeometry(50, 50);
-  const groundMaterial = new THREE.MeshStandardMaterial({ color: 0x228b22 }); // Green ground
+  // Create Ground and Roads
+  const groundGeometry = new THREE.PlaneGeometry(100, 100);
+  const groundMaterial = new THREE.MeshStandardMaterial({ color: 0x808080 }); // Gray ground for roads
   const ground = new THREE.Mesh(groundGeometry, groundMaterial);
   ground.rotation.x = -Math.PI / 2; // Rotate to lay flat
   ground.receiveShadow = true;
   scene.add(ground);
 
-  // Create Simple House
-  // House Base
-  const houseBaseGeometry = new THREE.BoxGeometry(4, 3, 4);
-  const houseBaseMaterial = new THREE.MeshStandardMaterial({ color: 0x8b4513 }); // Brown walls
-  const houseBase = new THREE.Mesh(houseBaseGeometry, houseBaseMaterial);
-  houseBase.position.set(0, 1.5, 0); // Center above the ground
-  houseBase.castShadow = true;
-  houseBase.receiveShadow = true;
-  scene.add(houseBase);
+  // Add Rectangular Buildings
+  const buildingMaterial = new THREE.MeshStandardMaterial({ color: 0x333333 }); // Dark gray buildings
+  const buildingPositions = [
+    { x: -20, z: -20, width: 10, height: 15, depth: 10 },
+    { x: 20, z: -20, width: 15, height: 20, depth: 10 },
+    { x: -20, z: 20, width: 12, height: 18, depth: 12 },
+    { x: 20, z: 20, width: 10, height: 12, depth: 15 },
+  ];
 
-  // Roof
-  const roofGeometry = new THREE.ConeGeometry(3.5, 2, 4);
-  const roofMaterial = new THREE.MeshStandardMaterial({ color: 0x8b0000 }); // Red roof
-  const roof = new THREE.Mesh(roofGeometry, roofMaterial);
-  roof.position.set(0, 4, 0); // Position on top of the house base
-  roof.rotation.y = Math.PI / 4; // Rotate to align with the base
-  roof.castShadow = true;
-  scene.add(roof);
+  buildingPositions.forEach((pos) => {
+    const buildingGeometry = new THREE.BoxGeometry(pos.width, pos.height, pos.depth);
+    const building = new THREE.Mesh(buildingGeometry, buildingMaterial);
+    building.position.set(pos.x, pos.height / 2, pos.z); // Position above the ground
+    building.castShadow = true;
+    building.receiveShadow = true;
+    scene.add(building);
+  });
 
   // Pointer Lock for Mouse Look
   const canvas = renderer.domElement;
@@ -107,34 +106,6 @@ function startGame() {
   const gravity = -0.005; // Gravity affecting the player
   const jumpStrength = 0.15; // Jump height
 
-  // Collision Detection Setup
-  const collidableObjects = [houseBase, roof];
-
-  function checkCollision(position) {
-    const cameraBox = new THREE.Box3().setFromCenterAndSize(position, new THREE.Vector3(1, 1, 1));
-    for (const object of collidableObjects) {
-      const objectBox = new THREE.Box3().setFromObject(object);
-      if (cameraBox.intersectsBox(objectBox)) {
-        return objectBox; // Return the object causing the collision
-      }
-    }
-    return null; // No collision
-  }
-
-  function slideAlongSurface(direction, objectBox, position) {
-    const slideDirection = direction.clone();
-    const objectNormal = new THREE.Vector3();
-
-    // Calculate the object's normal
-    if (objectBox) {
-      const center = objectBox.getCenter(new THREE.Vector3());
-      objectNormal.copy(position).sub(center).normalize();
-      slideDirection.sub(objectNormal.multiplyScalar(objectNormal.dot(slideDirection)));
-    }
-
-    return slideDirection;
-  }
-
   function updatePlayer() {
     const speed = 0.1; // Movement speed
     let direction = new THREE.Vector3();
@@ -157,20 +128,8 @@ function startGame() {
     // Normalize direction
     direction.normalize();
 
-    // Predict new position for horizontal movement
-    const newPosition = camera.position.clone().add(direction.multiplyScalar(speed));
-
-    // Check for collision
-    const collidedObject = checkCollision(newPosition);
-    if (collidedObject) {
-      const slideDirection = slideAlongSurface(direction, collidedObject, camera.position);
-      const slidePosition = camera.position.clone().add(slideDirection.multiplyScalar(speed));
-      if (!checkCollision(slidePosition)) {
-        camera.position.copy(slidePosition);
-      }
-    } else {
-      camera.position.copy(newPosition);
-    }
+    // Move the camera
+    camera.position.add(direction.multiplyScalar(speed));
 
     // Handle jumping
     if (keys[' ']) {
@@ -180,14 +139,9 @@ function startGame() {
       }
     }
 
-    // Apply gravity and vertical movement
+    // Apply gravity
     velocityY += gravity;
-    const newYPosition = camera.position.y + velocityY;
-
-    // Check for collision for vertical movement
-    if (!checkCollision(new THREE.Vector3(camera.position.x, newYPosition, camera.position.z))) {
-      camera.position.y = newYPosition;
-    }
+    camera.position.y += velocityY;
 
     // Prevent falling through the ground
     if (camera.position.y < 2) {
