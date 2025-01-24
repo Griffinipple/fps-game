@@ -54,6 +54,13 @@ function startGame() {
   ground.receiveShadow = true;
   scene.add(ground);
 
+  // Add Surrounding Box
+  const boxGeometry = new THREE.BoxGeometry(102, 102, 102);
+  const boxMaterial = new THREE.MeshBasicMaterial({ color: 0xadd8e6, side: THREE.BackSide });
+  const surroundingBox = new THREE.Mesh(boxGeometry, boxMaterial);
+  surroundingBox.position.set(0, 51, 0); // Centered around the platform
+  scene.add(surroundingBox);
+
   // Add Buildings
   const buildingMaterial = new THREE.MeshStandardMaterial({ color: 0x333333 });
   const buildingPositions = [];
