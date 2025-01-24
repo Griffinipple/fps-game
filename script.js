@@ -17,6 +17,13 @@ playButton.addEventListener('click', () => {
 
 function startGame() {
   const collidableObjects = [];
+const buildingPositions = [
+    [1, 1, 1, 1, 1],
+    [1, 2.25, 2.25, 2.25, 1],
+    [1, 2.25, 3.5, 2.25, 1],
+    [1, 2.25, 2.25, 2.25, 1],
+    [1, 1, 1, 1, 1]
+];
   // Create Scene, Camera, and Renderer
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -34,7 +41,21 @@ function startGame() {
 
   
 
-  const randomSpawn = spawnPoints[Math.floor(Math.random() * spawnPoints.length)];
+  // Ensure player spawns outside towers and within walls
+  let randomSpawn;
+  do {
+    randomSpawn = spawnPoints[Math.floor(Math.random() * spawnPoints.length)];
+  } while (
+    collidableObjects.some((object) => {
+      const objectBox = new THREE.Box3().setFromObject(object);
+      return (
+        randomSpawn.x > objectBox.min.x &&
+        randomSpawn.x < objectBox.max.x &&
+        randomSpawn.z > objectBox.min.z &&
+        randomSpawn.z < objectBox.max.z
+      );
+    })
+  );
   camera.position.set(randomSpawn.x, randomSpawn.y, randomSpawn.z);
 
   // Find the tallest tower (center tower in this case)
