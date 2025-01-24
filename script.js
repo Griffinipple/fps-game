@@ -87,8 +87,8 @@ function startGame() {
     [1, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1],
     [1, 1.5, 2, 2, 2, 2, 2, 2, 1.5, 1],
     [1, 1.5, 2, 2.5, 2.5, 2.5, 2.5, 2, 1.5, 1],
-    [1, 1.5, 2, 2.5, 3, 3, 2.5, 2, 1.5, 1],
-    [1, 1.5, 2, 2.5, 3, 3, 2.5, 2, 1.5, 1],
+    [1, 2.25, 3.5, 4.75, 6, 6, 4.75, 3.5, 2.25, 1],
+    [1, 2.25, 3.5, 4.75, 6, 6, 4.75, 3.5, 2.25, 1],
     [1, 1.5, 2, 2.5, 2.5, 2.5, 2.5, 2, 1.5, 1],
     [1, 1.5, 2, 2, 2, 2, 2, 2, 1.5, 1],
     [1, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1],
@@ -144,7 +144,7 @@ function startGame() {
   document.addEventListener('keydown', (e) => {
     keys[e.key.toLowerCase()] = true;
     if (e.key.toLowerCase() === ' ' && velocityY === 0) {
-      velocityY = 0.2; // Initial jump
+      velocityY = 0.3; // Initial jump
     } else if (e.key.toLowerCase() === ' ' && canDoubleJump) {
       velocityY = 0.2; // Double jump
       canDoubleJump = false;
