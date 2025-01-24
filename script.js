@@ -223,4 +223,4 @@ let canDoubleJump = false; // Track double jump ability
   }
 
   animate();
-
+}
