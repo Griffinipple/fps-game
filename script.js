@@ -92,8 +92,8 @@ function startGame() {
 
   buildingPositions.forEach((row, i) => {
     row.forEach((heightMultiplier, j) => {
-      const posX = (i - 2) * 20;
-      const posZ = (j - 2) * 20;
+      const posX = (i - 2) * 12;
+      const posZ = (j - 2) * 12;
       const height = heightMultiplier * 2;
       const width = 10;
       const depth = 10;
