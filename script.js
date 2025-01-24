@@ -70,6 +70,17 @@ function startGame() {
     scene.add(building);
   });
 
+  // Load and Add Gun Model to the Bottom Right of the Screen
+  const loader = new THREE.GLTFLoader();
+  loader.load('/assets/models/gun.glb', (gltf) => {
+    const gun = gltf.scene;
+    gun.scale.set(0.5, 0.5, 0.5); // Adjust the scale of the gun
+    gun.position.set(1.5, -1.5, -2); // Place the gun in the bottom right of the camera view
+    gun.rotation.set(0, Math.PI / 2, 0); // Rotate the gun as needed
+    camera.add(gun); // Add the gun as a child of the camera
+    scene.add(camera); // Ensure the camera is in the scene
+  });
+
   // Pointer Lock for Mouse Look
   const canvas = renderer.domElement;
   canvas.requestPointerLock = canvas.requestPointerLock || canvas.mozRequestPointerLock;
