@@ -16,24 +16,7 @@ playButton.addEventListener('click', () => {
 });
 
 function startGame() {
-  let playerModel;
-  const loader = new THREE.GLTFLoader();
-  loader.load(
-    '/assets/models/player.glb',
-    (gltf) => {
-      playerModel = gltf.scene;
-      playerModel.scale.set(1, 1, 1);
-      if (playerModel) playerModel.position.set(camera.position.x, camera.position.y - 1, camera.position.z);
-      playerModel.rotation.y = camera.rotation.y;
-      scene.add(playerModel);
-    },
-    undefined,
-    (error) => {
-      console.error('Failed to load the player model:', error);
-    }
-  );
-  
-    const hud = document.createElement('div');
+  const hud = document.createElement('div');
   hud.style.position = 'absolute';
   hud.style.top = '10px';
   hud.style.left = '10px';
@@ -51,11 +34,6 @@ function startGame() {
   // Create Scene, Camera, and Renderer
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-const clipSize = 30;
-let bulletsInClip = clipSize;
-let totalAmmo = Infinity;
-const reloadTime = 1500; // 1.5 seconds
-let isReloading = false;
   const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('game-canvas') });
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.shadowMap.enabled = true;
@@ -135,7 +113,11 @@ let isReloading = false;
 
   // Gun and Ammo System
   const loader = new THREE.GLTFLoader();
-  
+  let bulletsInClip = 30;
+  let totalAmmo = Infinity; // Infinite total ammo for reloading
+  const clipSize = 30;
+  const reloadTime = 1500; // 1.5 seconds
+  let isReloading = false;
 
   loader.load(
     '/assets/models/weapon.glb',
@@ -249,10 +231,6 @@ let isReloading = false;
   const gravity = -0.005;
 
   function updatePlayer() {
-    if (playerModel) {
-      if (playerModel) playerModel.position.set(camera.position.x, camera.position.y - 1, camera.position.z);
-      playerModel.rotation.y = camera.rotation.y;
-    }
     const speed = 0.2; // Increased movement speed by 2x
     let direction = new THREE.Vector3();
 
