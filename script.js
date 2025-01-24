@@ -225,6 +225,22 @@ let canDoubleJump = false; // Track double jump ability
         collision = true;
         break;
       }
+
+      // Check if the player is landing on top of the object
+      if (
+        nextPosition.y <= objectBox.max.y + 0.3 &&
+        camera.position.y >= objectBox.max.y - 0.3 &&
+        nextPosition.x >= objectBox.min.x &&
+        nextPosition.x <= objectBox.max.x &&
+        nextPosition.z >= objectBox.min.z &&
+        nextPosition.z <= objectBox.max.z
+      ) {
+        camera.position.y = objectBox.max.y; // Align player with the top of the building
+        velocityY = 0; // Reset vertical velocity
+        canDoubleJump = true; // Allow double jump again
+        collision = true;
+        break;
+      }
     }
 
     for (const platform of verticalCollidableObjects) {
@@ -244,7 +260,20 @@ let canDoubleJump = false; // Track double jump ability
         break;
       }
     }
+
+    if (!collision) {
+      camera.position.copy(nextPosition);
     }
+
+    velocityY += gravity;
+    const groundLevel = 1; // Height of the ground
+    camera.position.y += velocityY;
+    if (camera.position.y < groundLevel) {
+      camera.position.y = groundLevel;
+      velocityY = 0;
+      canDoubleJump = true; // Reset double jump when touching the ground
+    }
+  }
     }
       
 
