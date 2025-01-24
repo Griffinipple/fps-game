@@ -25,7 +25,7 @@ function startGame() {
   renderer.shadowMap.enabled = true;
 
   // Position the camera
-  camera.position.set(0, 2, 5);
+  camera.position.set(50, 2, 50);
   camera.rotation.order = "YXZ";
 
   // Add Ambient Light
