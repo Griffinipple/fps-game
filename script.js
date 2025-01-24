@@ -55,7 +55,29 @@ function startGame() {
   scene.add(ground);
 
   // Add Surrounding Box
-  const boxGeometry = new THREE.BoxGeometry(102, 102, 102);
+  // Add light blue walls and ceiling
+  const walls = [
+    { position: [0, 51, -51], rotation: [0, 0, 0] }, // Back wall
+    { position: [0, 51, 51], rotation: [0, Math.PI, 0] }, // Front wall
+    { position: [-51, 51, 0], rotation: [0, Math.PI / 2, 0] }, // Left wall
+    { position: [51, 51, 0], rotation: [0, -Math.PI / 2, 0] }, // Right wall
+  ];
+  walls.forEach((wall) => {
+    const wallGeometry = new THREE.PlaneGeometry(102, 102);
+    const wallMaterial = new THREE.MeshBasicMaterial({ color: 0xadd8e6, side: THREE.DoubleSide });
+    const wallMesh = new THREE.Mesh(wallGeometry, wallMaterial);
+    wallMesh.position.set(...wall.position);
+    wallMesh.rotation.set(...wall.rotation);
+    scene.add(wallMesh);
+  });
+
+  // Add ceiling
+  const ceilingGeometry = new THREE.PlaneGeometry(102, 102);
+  const ceilingMaterial = new THREE.MeshBasicMaterial({ color: 0xadd8e6, side: THREE.DoubleSide });
+  const ceiling = new THREE.Mesh(ceilingGeometry, ceilingMaterial);
+  ceiling.position.set(0, 102, 0);
+  ceiling.rotation.x = Math.PI / 2;
+  scene.add(ceiling);
   boxGeometry.deleteAttribute('position');
   const vertices = [
     -51, 0, -51,   51, 0, -51,   51, 102, -51,   -51, 102, -51,  // Front
