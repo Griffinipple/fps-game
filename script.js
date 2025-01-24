@@ -62,7 +62,7 @@ const buildingPositions = [
   const centerX = 0;
   const centerZ = 0;
   const centerHeight = buildingPositions[2][2] * 2; // Height multiplier * 2
-  camera.lookAt(centerX, centerHeight / 2, centerZ);
+  camera.lookAt(centerX, centerHeight, centerZ);
   // Find the tallest tower (center tower in this case)
   camera.rotation.order = "YXZ";
 
