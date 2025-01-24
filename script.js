@@ -198,10 +198,7 @@ let canDoubleJump = false; // Track double jump ability
         canDoubleJump = true; // Allow double jump again
         collision = true;
       }
-    }
-    }
-
-    if (!collision) {
+    } if (!collision) {
       camera.position.copy(nextPosition);
     }
 
