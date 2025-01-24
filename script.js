@@ -62,12 +62,17 @@ function startGame() {
 
   for (let i = -gridSize / 2; i < gridSize / 2; i++) {
     for (let j = -gridSize / 2; j < gridSize / 2; j++) {
-      buildingPositions.push({
-        x: i * spacing,
-        z: j * spacing,
-        width: 10 + Math.random() * 5,
-        depth: 10 + Math.random() * 5,
-      });
+      const posX = i * spacing;
+      const posZ = j * spacing;
+      // Ensure buildings are within the platform bounds
+      if (posX >= -50 && posX <= 50 && posZ >= -50 && posZ <= 50) {
+        buildingPositions.push({
+          x: posX,
+          z: posZ,
+          width: 10 + Math.random() * 5,
+          depth: 10 + Math.random() * 5,
+        });
+      }
     }
   }
 
