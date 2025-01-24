@@ -56,6 +56,13 @@ function startGame() {
 
   // Add Surrounding Box
   const boxGeometry = new THREE.BoxGeometry(102, 102, 102);
+  boxGeometry.deleteAttribute('position');
+  const vertices = [
+    -51, 0, -51,   51, 0, -51,   51, 102, -51,   -51, 102, -51,  // Front
+    -51, 0,  51,   51, 0,  51,   51, 102,  51,   -51, 102,  51,  // Back
+    -51, 0, -51,   -51, 0,  51,   -51, 102,  51,   -51, 102, -51, // Left
+     51, 0, -51,    51, 0,  51,    51, 102,  51,    51, 102, -51, // Right
+  ];
   const boxMaterial = new THREE.MeshBasicMaterial({ color: 0xadd8e6, side: THREE.BackSide });
   const surroundingBox = new THREE.Mesh(boxGeometry, boxMaterial);
   surroundingBox.position.set(0, 51, 0); // Centered around the platform
