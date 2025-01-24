@@ -62,12 +62,16 @@ function startGame() {
 
   for (let i = -gridSize / 2; i < gridSize / 2; i++) {
     for (let j = -gridSize / 2; j < gridSize / 2; j++) {
-      buildingPositions.push({
-        x: i * spacing,
-        z: j * spacing,
-        width: 10 + Math.random() * 5,
-        depth: 10 + Math.random() * 5,
-      });
+      const posX = i * spacing;
+      const posZ = j * spacing;
+      if (Math.abs(posX) <= 50 && Math.abs(posZ) <= 50) { // Ensure buildings spawn only within the platform
+        buildingPositions.push({
+          x: posX,
+          z: posZ,
+          width: 10 + Math.random() * 5,
+          depth: 10 + Math.random() * 5,
+        });
+      }
     }
   }
 
