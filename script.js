@@ -49,8 +49,8 @@ function startGame() {
   // Add Buildings
   const buildingMaterial = new THREE.MeshStandardMaterial({ color: 0x333333 });
   const buildingPositions = [];
-  const gridSize = 2;
-  const spacing = 25;
+  const gridSize = 10;
+  const spacing = 20;
 
   for (let i = -gridSize / 2; i < gridSize / 2; i++) {
     for (let j = -gridSize / 2; j < gridSize / 2; j++) {
