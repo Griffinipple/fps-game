@@ -72,7 +72,7 @@ function startGame() {
 
   // Load and Add Gun Model to the Bottom Right of the Screen
   const loader = new THREE.GLTFLoader();
-  loader.load('/assets/models/gun.glb', (gltf) => {
+  loader.load('/assets/models/weapon.glb', (gltf) => {
     const gun = gltf.scene;
     gun.scale.set(0.5, 0.5, 0.5); // Adjust the scale of the gun
     gun.position.set(0.6, -0.5, -1); // Position the gun in front of the camera
