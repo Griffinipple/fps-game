@@ -16,7 +16,12 @@ playButton.addEventListener('click', () => {
 });
 
 function startGame() {
-  const hud = document.createElement('div');
+  let bulletsInClip = 30;
+  let totalAmmo = Infinity; // Infinite total ammo for reloading
+  const clipSize = 30;
+  const reloadTime = 1500; // 1.5 seconds
+  let isReloading = false;
+    const hud = document.createElement('div');
   hud.style.position = 'absolute';
   hud.style.top = '10px';
   hud.style.left = '10px';
