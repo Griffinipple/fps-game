@@ -26,10 +26,10 @@ function startGame() {
 
   // Position the camera
   const spawnPoints = [
-    { x: -48.5, y: 2, z: -48.5 }, // Top-left corner
-    { x: 48.5, y: 2, z: -48.5 },  // Top-right corner
-    { x: -48.5, y: 2, z: 48.5 },  // Bottom-left corner
-    { x: 48.5, y: 2, z: 48.5 }    // Bottom-right corner
+    { x: -25, y: 2, z: -25 }, // Top-left corner
+    { x: 25, y: 2, z: -25 },  // Top-right corner
+    { x: -25, y: 2, z: 25 },  // Bottom-left corner
+    { x: 25, y: 2, z: 25 }    // Bottom-right corner
   ];
 
   const randomSpawn = spawnPoints[Math.floor(Math.random() * spawnPoints.length)];
@@ -57,10 +57,10 @@ function startGame() {
   // Add Surrounding Box
   // Add light blue walls and ceiling
   const walls = [
-    { position: [0, 51, -50], rotation: [0, 0, 0] }, // Back wall
-    { position: [0, 51, 50], rotation: [0, Math.PI, 0] }, // Front wall
-    { position: [-50, 51, 0], rotation: [0, Math.PI / 2, 0] }, // Left wall
-    { position: [50, 51, 0], rotation: [0, -Math.PI / 2, 0] }, // Right wall
+    { position: [0, 51, -30], rotation: [0, 0, 0] }, // Back wall
+    { position: [0, 51, 30], rotation: [0, Math.PI, 0] }, // Front wall
+    { position: [-30, 51, 0], rotation: [0, Math.PI / 2, 0] }, // Left wall
+    { position: [30, 51, 0], rotation: [0, -Math.PI / 2, 0] }, // Right wall
   ];
   walls.forEach((wall) => {
     const wallGeometry = new THREE.PlaneGeometry(102, 102);
