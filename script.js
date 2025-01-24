@@ -70,6 +70,23 @@ function startGame() {
     scene.add(building);
   });
 
+  // Add Ladder
+  const ladderGeometry = new THREE.BoxGeometry(2, 10, 0.5); // Thin rectangular ladder
+  const ladderMaterial = new THREE.MeshStandardMaterial({ color: 0xaaaaaa }); // Light gray
+  const ladder = new THREE.Mesh(ladderGeometry, ladderMaterial);
+  ladder.position.set(0, 5, 0); // Place ladder at center of the scene
+  ladder.castShadow = true;
+  ladder.receiveShadow = true;
+  scene.add(ladder);
+
+  let onLadder = false;
+
+  function checkLadderCollision() {
+    const ladderBox = new THREE.Box3().setFromObject(ladder);
+    const playerBox = new THREE.Box3().setFromCenterAndSize(camera.position, new THREE.Vector3(1, 1, 1));
+    return ladderBox.intersectsBox(playerBox);
+  }
+
   // Load and Add Gun Model to the Bottom Right of the Screen
   const loader = new THREE.GLTFLoader();
   loader.load('/assets/models/weapon.glb', (gltf) => {
@@ -184,16 +201,19 @@ function startGame() {
     // Move the camera
     camera.position.add(direction.multiplyScalar(speed));
 
-    // Handle jumping
-    if (keys[' ']) {
-      if (!isJumping) {
-        velocityY = jumpStrength; // Apply jump strength
-        isJumping = true; // Prevent double-jumping
-      }
+    // Check if player is on the ladder
+    if (checkLadderCollision() && keys['w']) {
+      onLadder = true;
+      velocityY = 0.05; // Climb up
+    } else {
+      onLadder = false;
     }
 
-    // Apply gravity
-    velocityY += gravity;
+    if (!onLadder) {
+      // Apply gravity if not on the ladder
+      velocityY += gravity;
+    }
+
     camera.position.y += velocityY;
 
     // Prevent falling through the ground
