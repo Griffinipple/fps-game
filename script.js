@@ -90,9 +90,10 @@ function startGame() {
   });
 
   let onLadder = false;
+let collidableObjects = []; // Store objects for collision detection
 
   function checkLadderCollision() {
-    const ladders = scene.children.filter((child) => child.geometry && child.geometry.type === 'BoxGeometry' && child.geometry.parameters.depth === 0.5);
+    const ladders = scene.children.filter((child) => child.geometry && child.geometry.type === 'BoxGeometry' && child.material.color.getHex() === 0x00ff00);
     for (const ladder of ladders) {
       const ladderBox = new THREE.Box3().setFromObject(ladder);
       const playerBox = new THREE.Box3().setFromCenterAndSize(camera.position, new THREE.Vector3(1, 1, 1));
@@ -101,7 +102,7 @@ function startGame() {
       }
     }
     return false;
-  }
+}
 
   // Load and Add Gun Model to the Bottom Right of the Screen
   const loader = new THREE.GLTFLoader();
@@ -215,7 +216,19 @@ function startGame() {
     direction.normalize();
 
     // Move the camera
-    camera.position.add(direction.multiplyScalar(speed));
+    const nextPosition = camera.position.clone().add(direction.multiplyScalar(speed));
+    let collision = false;
+    for (const object of collidableObjects) {
+      const objectBox = new THREE.Box3().setFromObject(object);
+      const playerBox = new THREE.Box3().setFromCenterAndSize(nextPosition, new THREE.Vector3(1, 1, 1));
+      if (objectBox.intersectsBox(playerBox)) {
+        collision = true;
+        break;
+      }
+    }
+    if (!collision) {
+      camera.position.copy(nextPosition);
+    }
 
     // Check if player is on the ladder
     if (checkLadderCollision() && keys['w']) {
@@ -225,8 +238,9 @@ function startGame() {
       onLadder = false;
     }
 
-    if (!onLadder) {
-      // Apply gravity if not on the ladder
+    if (onLadder) {
+      velocityY = 0.05; // Constant upward velocity when on ladder
+    } else {
       velocityY += gravity;
     }
 
