@@ -92,8 +92,8 @@ function startGame() {
 
   buildingPositions.forEach((row, i) => {
     row.forEach((heightMultiplier, j) => {
-      const posX = (i - 5) * 20;
-      const posZ = (j - 5) * 20;
+      const posX = (i - 2) * 20;
+      const posZ = (j - 2) * 20;
       const height = heightMultiplier * 2;
       const width = 10;
       const depth = 10;
@@ -106,6 +106,7 @@ function startGame() {
       scene.add(building);
 
       const buildingBox = new THREE.Box3().setFromObject(building);
+      const buildingTop = new THREE.Plane(new THREE.Vector3(0, 1, 0), -(building.position.y + height / 2));
       building.userData.collisionBox = buildingBox;
       collidableObjects.push(building);
     });
