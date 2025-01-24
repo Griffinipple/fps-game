@@ -59,9 +59,9 @@ const buildingPositions = [
   camera.position.set(randomSpawn.x, randomSpawn.y, randomSpawn.z);
 
   // Find the tallest tower (center tower in this case)
-  const centerX = 0; // Center of the grid
-  const centerZ = 0; // Center of the grid
-  const centerHeight = 0; // Remove height adjustment for proper camera alignment // Height multiplier * 2
+  const centerX = (2 - 2) * 12; // Center X based on the grid
+  const centerZ = (2 - 2) * 12; // Center Z based on the grid
+  const centerHeight = buildingPositions[2][2] * 2; // Height multiplier * 2
   camera.lookAt(centerX, centerHeight / 2, centerZ);
   // Find the tallest tower (center tower in this case)
   camera.rotation.order = "YXZ";
