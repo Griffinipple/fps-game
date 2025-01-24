@@ -192,11 +192,11 @@ function startGame() {
 
   let isJumping = false; // To prevent double-jumping
   let velocityY = 0; // Vertical velocity for jumping
-  const gravity = -0.005; // Gravity affecting the player
-  const jumpStrength = 0.15; // Jump height
+  const gravity = -0.01; // Stronger gravity
+  const jumpStrength = 0.25; // Higher jump
 
   function updatePlayer() {
-    const speed = 0.1; // Movement speed
+    const speed = 0.2; // Increased movement speed
     let direction = new THREE.Vector3();
 
     // Calculate forward and right vectors based on camera rotation
@@ -232,22 +232,25 @@ function startGame() {
       camera.position.copy(nextPosition);
     }
 
-    // Check if player is on the ladder
-    if (checkLadderCollision() && keys['w']) {
+    // Gravity and Jump Handling
+    if (!checkLadderCollision()) {
+      velocityY += gravity;
+      camera.position.y += velocityY;
+
+      if (camera.position.y < 1) {
+        camera.position.y = 1;
+        velocityY = 0;
+        isJumping = false;
+      }
+    } else if (keys['w']) {
       onLadder = true;
-      velocityY = 0.05; // Climb up
-    } else {
-      onLadder = false;
+      velocityY = 0.05; // Climbing speed
     }
 
-    if (onLadder && keys[' ']) {
-      const maxLadderHeight = 30; // Adjust to the maximum ladder height
-      if (camera.position.y < maxLadderHeight) {
-        velocityY += 0.01; // Gradually increase upward velocity while holding space
-      } else {
-        velocityY = 0; // Stop upward movement at the top of the ladder
-        camera.position.y = maxLadderHeight; // Snap to the top of the ladder
-      }
+    // Jump
+    if (keys[' '] && !isJumping) {
+      velocityY = jumpStrength;
+      isJumping = true;
     }
   }
 
