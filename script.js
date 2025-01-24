@@ -39,7 +39,7 @@ function startGame() {
 
   // Add a Sun Sphere
   const sunGeometry = new THREE.SphereGeometry(3, 32, 32); // Increase the size of the sun
-  const sunMaterial = new THREE.MeshBasicMaterial({ color: 0xffcc00 });
+  const sunMaterial = new THREE.MeshBasicMaterial({ color: 0xffcc00, emissive: 0xffdd88 });
   const sun = new THREE.Mesh(sunGeometry, sunMaterial);
   sun.position.set(0, 50, 0); // Match the position of the directional light
   scene.add(sun);
@@ -51,6 +51,32 @@ function startGame() {
   ground.rotation.x = -Math.PI / 2; // Rotate to lay flat
   ground.receiveShadow = true;
   scene.add(ground);
+
+  // Surround the Ground with Larger, Less Steep Pyramids
+  const pyramidGeometry = new THREE.ConeGeometry(10, 5, 4); // Larger base, less steep height
+  const pyramidMaterial = new THREE.MeshStandardMaterial({ color: 0x8b0000 }); // Red pyramids
+
+  const pyramidPositions = [
+    { x: -30, z: -30 },
+    { x: -30, z: 30 },
+    { x: 30, z: -30 },
+    { x: 30, z: 30 },
+    { x: 0, z: -30 },
+    { x: 0, z: 30 },
+    { x: -30, z: 0 },
+    { x: 30, z: 0 },
+  ];
+
+  const collidableObjects = []; // Collect pyramids for collision detection
+
+  pyramidPositions.forEach((pos) => {
+    const pyramid = new THREE.Mesh(pyramidGeometry, pyramidMaterial);
+    pyramid.position.set(pos.x, 2.5, pos.z); // Adjust height to align with the ground
+    pyramid.castShadow = true;
+    pyramid.receiveShadow = true;
+    scene.add(pyramid);
+    collidableObjects.push(pyramid); // Add pyramid to collidable objects
+  });
 
   // Pointer Lock for Mouse Look
   const canvas = renderer.domElement;
@@ -88,6 +114,31 @@ function startGame() {
   const gravity = -0.005; // Gravity affecting the player
   const jumpStrength = 0.15; // Jump height
 
+  function checkCollision(position) {
+    const cameraBox = new THREE.Box3().setFromCenterAndSize(position, new THREE.Vector3(1, 1, 1));
+    for (const object of collidableObjects) {
+      const objectBox = new THREE.Box3().setFromObject(object);
+      if (cameraBox.intersectsBox(objectBox)) {
+        return objectBox; // Return the object causing the collision
+      }
+    }
+    return null; // No collision
+  }
+
+  function slideAlongSurface(direction, objectBox, position) {
+    const slideDirection = direction.clone();
+    const objectNormal = new THREE.Vector3();
+
+    // Calculate the object's normal
+    if (objectBox) {
+      const center = objectBox.getCenter(new THREE.Vector3());
+      objectNormal.copy(position).sub(center).normalize();
+      slideDirection.sub(objectNormal.multiplyScalar(objectNormal.dot(slideDirection)));
+    }
+
+    return slideDirection;
+  }
+
   function updatePlayer() {
     const speed = 0.1; // Movement speed
     let direction = new THREE.Vector3();
@@ -110,8 +161,20 @@ function startGame() {
     // Normalize direction
     direction.normalize();
 
-    // Move the camera
-    camera.position.add(direction.multiplyScalar(speed));
+    // Predict new position for horizontal movement
+    const newPosition = camera.position.clone().add(direction.multiplyScalar(speed));
+
+    // Check for collision
+    const collidedObject = checkCollision(newPosition);
+    if (collidedObject) {
+      const slideDirection = slideAlongSurface(direction, collidedObject, camera.position);
+      const slidePosition = camera.position.clone().add(slideDirection.multiplyScalar(speed));
+      if (!checkCollision(slidePosition)) {
+        camera.position.copy(slidePosition);
+      }
+    } else {
+      camera.position.copy(newPosition);
+    }
 
     // Handle jumping
     if (keys[' ']) {
@@ -121,9 +184,16 @@ function startGame() {
       }
     }
 
-    // Apply gravity
+    // Apply gravity and vertical movement
     velocityY += gravity;
-    camera.position.y += velocityY;
+    const newYPosition = camera.position.y + velocityY;
+
+    // Check for collision for vertical movement
+    if (!checkCollision(new THREE.Vector3(camera.position.x, newYPosition, camera.position.z))) {
+      camera.position.y = newYPosition;
+    } else {
+      velocityY = 0; // Stop vertical velocity on collision
+    }
 
     // Prevent falling through the ground
     if (camera.position.y < 2) {
