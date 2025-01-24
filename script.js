@@ -238,23 +238,17 @@ function startGame() {
       onLadder = false;
     }
 
-    if (onLadder) {
-      velocityY = 0.05; // Constant upward velocity when on ladder
-    } else {
-      if (keys[' '] && !isJumping) {
-        velocityY = jumpStrength; // Jump
-        isJumping = true; // Prevent double jump
+    if (onLadder && keys[' ']) {
+      const maxLadderHeight = 30; // Adjust to the maximum ladder height
+      if (camera.position.y < maxLadderHeight) {
+        velocityY += 0.01; // Gradually increase upward velocity while holding space
+      } else {
+        velocityY = 0; // Stop upward movement at the top of the ladder
+        camera.position.y = maxLadderHeight; // Snap to the top of the ladder
       }
-      velocityY += gravity;
     }
-
-    camera.position.y += velocityY;
-
-    // Prevent falling through the ground
-    if (camera.position.y < 2) {
-      camera.position.y = 2; // Reset to ground level
-      isJumping = false; // Allow jumping again
-      velocityY = 0; // Reset vertical velocity
+        camera.position.y = maxLadderHeight; // Snap to the top of the ladder
+      }
     }
   }
 
