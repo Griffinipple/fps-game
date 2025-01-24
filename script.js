@@ -75,11 +75,53 @@ function startGame() {
   loader.load('/assets/models/gun.glb', (gltf) => {
     const gun = gltf.scene;
     gun.scale.set(0.5, 0.5, 0.5); // Adjust the scale of the gun
-    gun.position.set(1.5, -1.5, -2); // Place the gun in the bottom right of the camera view
+    gun.position.set(0.6, -0.5, -1); // Position the gun in front of the camera
     gun.rotation.set(0, Math.PI / 2, 0); // Rotate the gun as needed
     camera.add(gun); // Add the gun as a child of the camera
-    scene.add(camera); // Ensure the camera is in the scene
   });
+
+  // Shooting Mechanism
+  const projectiles = [];
+
+  function shoot() {
+    const projectileGeometry = new THREE.SphereGeometry(0.1, 8, 8);
+    const projectileMaterial = new THREE.MeshStandardMaterial({ color: 0x888888 }); // Gray projectile
+    const projectile = new THREE.Mesh(projectileGeometry, projectileMaterial);
+
+    // Position the projectile at the gun's barrel (front of the camera)
+    const barrelOffset = new THREE.Vector3(0, -0.5, -1);
+    projectile.position.copy(camera.localToWorld(barrelOffset));
+
+    // Set projectile velocity
+    const velocity = new THREE.Vector3();
+    camera.getWorldDirection(velocity);
+    velocity.multiplyScalar(1); // Adjust speed
+
+    projectile.userData.velocity = velocity;
+    scene.add(projectile);
+    projectiles.push(projectile);
+  }
+
+  window.addEventListener('mousedown', () => {
+    shoot();
+  });
+
+  function updateProjectiles() {
+    for (let i = projectiles.length - 1; i >= 0; i--) {
+      const projectile = projectiles[i];
+      projectile.position.add(projectile.userData.velocity);
+
+      // Remove the projectile if it goes out of bounds
+      if (
+        Math.abs(projectile.position.x) > 50 ||
+        Math.abs(projectile.position.y) > 50 ||
+        Math.abs(projectile.position.z) > 50
+      ) {
+        scene.remove(projectile);
+        projectiles.splice(i, 1);
+      }
+    }
+  }
 
   // Pointer Lock for Mouse Look
   const canvas = renderer.domElement;
@@ -167,6 +209,7 @@ function startGame() {
     requestAnimationFrame(animate);
 
     updatePlayer(); // Update player movement
+    updateProjectiles(); // Update projectile movement
     renderer.render(scene, camera); // Render the scene
   }
 
