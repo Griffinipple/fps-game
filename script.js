@@ -52,42 +52,6 @@ function startGame() {
   ground.receiveShadow = true;
   scene.add(ground);
 
-  // Surround the Ground with Larger, Less Steep Pyramids
-  const pyramidGeometry = new THREE.ConeGeometry(10, 5, 4); // Larger base, less steep height
-  const pyramidMaterial = new THREE.MeshStandardMaterial({ color: 0x8b0000 }); // Red pyramids
-
-  const pyramidPositions = [
-    { x: -20, z: -20 },
-    { x: -20, z: 20 },
-    { x: 20, z: -20 },
-    { x: 20, z: 20 },
-    { x: 0, z: -20 },
-    { x: 0, z: 20 },
-    { x: -20, z: 0 },
-    { x: 20, z: 0 },
-  ];
-
-  const collidableObjects = []; // Collect pyramids for collision detection
-
-  pyramidPositions.forEach((pos) => {
-    const pyramid = new THREE.Mesh(pyramidGeometry, pyramidMaterial);
-    pyramid.position.set(pos.x, 2.5, pos.z); // Adjust height to align with the ground
-    pyramid.castShadow = true;
-    pyramid.receiveShadow = true;
-    scene.add(pyramid);
-
-    // Use THREE.ConeGeometry vertices to define collision shape
-    const vertices = pyramidGeometry.attributes.position.array;
-    const pyramidFaces = [];
-    for (let i = 0; i < vertices.length; i += 9) {
-      const v1 = new THREE.Vector3(vertices[i], vertices[i + 1], vertices[i + 2]);
-      const v2 = new THREE.Vector3(vertices[i + 3], vertices[i + 4], vertices[i + 5]);
-      const v3 = new THREE.Vector3(vertices[i + 6], vertices[i + 7], vertices[i + 8]);
-      pyramidFaces.push([v1, v2, v3]);
-    }
-    collidableObjects.push({ mesh: pyramid, faces: pyramidFaces }); // Store pyramid mesh and faces for collision
-  });
-
   // Pointer Lock for Mouse Look
   const canvas = renderer.domElement;
   canvas.requestPointerLock = canvas.requestPointerLock || canvas.mozRequestPointerLock;
@@ -124,37 +88,6 @@ function startGame() {
   const gravity = -0.005; // Gravity affecting the player
   const jumpStrength = 0.15; // Jump height
 
-  function checkCollision(position) {
-    for (const object of collidableObjects) {
-      const mesh = object.mesh;
-      const faces = object.faces;
-
-      for (const face of faces) {
-        const [v1, v2, v3] = face;
-        const worldV1 = v1.clone().applyMatrix4(mesh.matrixWorld);
-        const worldV2 = v2.clone().applyMatrix4(mesh.matrixWorld);
-        const worldV3 = v3.clone().applyMatrix4(mesh.matrixWorld);
-
-        const normal = new THREE.Triangle(worldV1, worldV2, worldV3).normal();
-        const plane = new THREE.Plane().setFromNormalAndCoplanarPoint(normal, worldV1);
-
-        if (plane.distanceToPoint(position) < 0.5) {
-          return { normal, plane }; // Return collision info
-        }
-      }
-    }
-    return null; // No collision
-  }
-
-  function slideAlongSurface(direction, collision) {
-    const slideDirection = direction.clone();
-    if (collision) {
-      const { normal } = collision;
-      slideDirection.sub(normal.multiplyScalar(normal.dot(slideDirection)));
-    }
-    return slideDirection;
-  }
-
   function updatePlayer() {
     const speed = 0.1; // Movement speed
     let direction = new THREE.Vector3();
@@ -177,18 +110,8 @@ function startGame() {
     // Normalize direction
     direction.normalize();
 
-    // Predict new position for horizontal movement
-    const newPosition = camera.position.clone().add(direction.multiplyScalar(speed));
-
-    // Check for collision
-    const collision = checkCollision(newPosition);
-    if (collision) {
-      const slideDirection = slideAlongSurface(direction, collision);
-      const slidePosition = camera.position.clone().add(slideDirection.multiplyScalar(speed));
-      camera.position.copy(slidePosition);
-    } else {
-      camera.position.copy(newPosition);
-    }
+    // Move the camera
+    camera.position.add(direction.multiplyScalar(speed));
 
     // Handle jumping
     if (keys[' ']) {
@@ -198,17 +121,9 @@ function startGame() {
       }
     }
 
-    // Apply gravity and vertical movement
+    // Apply gravity
     velocityY += gravity;
-    const newYPosition = camera.position.y + velocityY;
-
-    // Check for collision for vertical movement
-    const verticalCollision = checkCollision(new THREE.Vector3(camera.position.x, newYPosition, camera.position.z));
-    if (!verticalCollision) {
-      camera.position.y = newYPosition;
-    } else {
-      velocityY = 0; // Stop vertical velocity on collision
-    }
+    camera.position.y += velocityY;
 
     // Prevent falling through the ground
     if (camera.position.y < 2) {
