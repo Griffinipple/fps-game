@@ -75,7 +75,17 @@ function startGame() {
     pyramid.castShadow = true;
     pyramid.receiveShadow = true;
     scene.add(pyramid);
-    collidableObjects.push(pyramid); // Add pyramid to collidable objects
+
+    // Use THREE.ConeGeometry vertices to define collision shape
+    const vertices = pyramidGeometry.attributes.position.array;
+    const pyramidFaces = [];
+    for (let i = 0; i < vertices.length; i += 9) {
+      const v1 = new THREE.Vector3(vertices[i], vertices[i + 1], vertices[i + 2]);
+      const v2 = new THREE.Vector3(vertices[i + 3], vertices[i + 4], vertices[i + 5]);
+      const v3 = new THREE.Vector3(vertices[i + 6], vertices[i + 7], vertices[i + 8]);
+      pyramidFaces.push([v1, v2, v3]);
+    }
+    collidableObjects.push({ mesh: pyramid, faces: pyramidFaces }); // Store pyramid mesh and faces for collision
   });
 
   // Pointer Lock for Mouse Look
@@ -115,27 +125,33 @@ function startGame() {
   const jumpStrength = 0.15; // Jump height
 
   function checkCollision(position) {
-    const cameraBox = new THREE.Box3().setFromCenterAndSize(position, new THREE.Vector3(1, 1, 1));
     for (const object of collidableObjects) {
-      const objectBox = new THREE.Box3().setFromObject(object);
-      if (cameraBox.intersectsBox(objectBox)) {
-        return objectBox; // Return the object causing the collision
+      const mesh = object.mesh;
+      const faces = object.faces;
+
+      for (const face of faces) {
+        const [v1, v2, v3] = face;
+        const worldV1 = v1.clone().applyMatrix4(mesh.matrixWorld);
+        const worldV2 = v2.clone().applyMatrix4(mesh.matrixWorld);
+        const worldV3 = v3.clone().applyMatrix4(mesh.matrixWorld);
+
+        const normal = new THREE.Triangle(worldV1, worldV2, worldV3).normal();
+        const plane = new THREE.Plane().setFromNormalAndCoplanarPoint(normal, worldV1);
+
+        if (plane.distanceToPoint(position) < 0.5) {
+          return { normal, plane }; // Return collision info
+        }
       }
     }
     return null; // No collision
   }
 
-  function slideAlongSurface(direction, objectBox, position) {
+  function slideAlongSurface(direction, collision) {
     const slideDirection = direction.clone();
-    const objectNormal = new THREE.Vector3();
-
-    // Calculate the object's normal
-    if (objectBox) {
-      const center = objectBox.getCenter(new THREE.Vector3());
-      objectNormal.copy(position).sub(center).normalize();
-      slideDirection.sub(objectNormal.multiplyScalar(objectNormal.dot(slideDirection)));
+    if (collision) {
+      const { normal } = collision;
+      slideDirection.sub(normal.multiplyScalar(normal.dot(slideDirection)));
     }
-
     return slideDirection;
   }
 
@@ -165,13 +181,11 @@ function startGame() {
     const newPosition = camera.position.clone().add(direction.multiplyScalar(speed));
 
     // Check for collision
-    const collidedObject = checkCollision(newPosition);
-    if (collidedObject) {
-      const slideDirection = slideAlongSurface(direction, collidedObject, camera.position);
+    const collision = checkCollision(newPosition);
+    if (collision) {
+      const slideDirection = slideAlongSurface(direction, collision);
       const slidePosition = camera.position.clone().add(slideDirection.multiplyScalar(speed));
-      if (!checkCollision(slidePosition)) {
-        camera.position.copy(slidePosition);
-      }
+      camera.position.copy(slidePosition);
     } else {
       camera.position.copy(newPosition);
     }
@@ -189,7 +203,8 @@ function startGame() {
     const newYPosition = camera.position.y + velocityY;
 
     // Check for collision for vertical movement
-    if (!checkCollision(new THREE.Vector3(camera.position.x, newYPosition, camera.position.z))) {
+    const verticalCollision = checkCollision(new THREE.Vector3(camera.position.x, newYPosition, camera.position.z));
+    if (!verticalCollision) {
       camera.position.y = newYPosition;
     } else {
       velocityY = 0; // Stop vertical velocity on collision
