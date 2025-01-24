@@ -39,7 +39,7 @@ function startGame() {
 
   // Add a Sun Sphere
   const sunGeometry = new THREE.SphereGeometry(3, 32, 32); // Increase the size of the sun
-  const sunMaterial = new THREE.MeshBasicMaterial({ color: 0xffcc00, emissive: 0xffdd88 });
+  const sunMaterial = new THREE.MeshBasicMaterial({ color: 0xffcc00 });
   const sun = new THREE.Mesh(sunGeometry, sunMaterial);
   sun.position.set(0, 50, 0); // Match the position of the directional light
   scene.add(sun);
