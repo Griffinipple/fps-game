@@ -114,11 +114,7 @@ function startGame() {
       building.userData.collisionBox = buildingBox;
       collidableObjects.push(building);
     });
-  }
-
-  
-
-  // Resize Event Listener
+  }); // Resize Event Listener
   window.addEventListener('resize', () => {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
