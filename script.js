@@ -57,10 +57,10 @@ function startGame() {
   // Add Surrounding Box
   // Add light blue walls and ceiling
   const walls = [
-    { position: [0, 51, -48], rotation: [0, 0, 0] }, // Back wall
-    { position: [0, 51, 48], rotation: [0, Math.PI, 0] }, // Front wall
-    { position: [-48, 51, 0], rotation: [0, Math.PI / 2, 0] }, // Left wall
-    { position: [48, 51, 0], rotation: [0, -Math.PI / 2, 0] }, // Right wall
+    { position: [0, 51, -50], rotation: [0, 0, 0] }, // Back wall
+    { position: [0, 51, 50], rotation: [0, Math.PI, 0] }, // Front wall
+    { position: [-50, 51, 0], rotation: [0, Math.PI / 2, 0] }, // Left wall
+    { position: [50, 51, 0], rotation: [0, -Math.PI / 2, 0] }, // Right wall
   ];
   walls.forEach((wall) => {
     const wallGeometry = new THREE.PlaneGeometry(102, 102);
@@ -99,7 +99,7 @@ function startGame() {
     row.forEach((heightMultiplier, j) => {
       const posX = (i - 5) * 20;
       const posZ = (j - 5) * 20;
-      const height = heightMultiplier * 10;
+      const height = heightMultiplier * 5;
       const width = 10;
       const depth = 10;
       const buildingGeometry = new THREE.BoxGeometry(width, height, depth);
