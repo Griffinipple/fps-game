@@ -57,10 +57,10 @@ function startGame() {
   // Add Surrounding Box
   // Add light blue walls and ceiling
   const walls = [
-    { position: [0, 51, -51], rotation: [0, 0, 0] }, // Back wall
-    { position: [0, 51, 51], rotation: [0, Math.PI, 0] }, // Front wall
-    { position: [-51, 51, 0], rotation: [0, Math.PI / 2, 0] }, // Left wall
-    { position: [51, 51, 0], rotation: [0, -Math.PI / 2, 0] }, // Right wall
+    { position: [0, 51, -48], rotation: [0, 0, 0] }, // Back wall
+    { position: [0, 51, 48], rotation: [0, Math.PI, 0] }, // Front wall
+    { position: [-48, 51, 0], rotation: [0, Math.PI / 2, 0] }, // Left wall
+    { position: [48, 51, 0], rotation: [0, -Math.PI / 2, 0] }, // Right wall
   ];
   walls.forEach((wall) => {
     const wallGeometry = new THREE.PlaneGeometry(102, 102);
@@ -82,23 +82,38 @@ function startGame() {
 
   // Add Buildings
   const buildingMaterial = new THREE.MeshStandardMaterial({ color: 0x333333 });
-  const buildingPositions = [];
-  const gridSize = 10;
-  const spacing = 20;
+  const buildingPositions = [
+    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+    [1, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1],
+    [1, 1.5, 2, 2, 2, 2, 2, 2, 1.5, 1],
+    [1, 1.5, 2, 2.5, 2.5, 2.5, 2.5, 2, 1.5, 1],
+    [1, 1.5, 2, 2.5, 3, 3, 2.5, 2, 1.5, 1],
+    [1, 1.5, 2, 2.5, 3, 3, 2.5, 2, 1.5, 1],
+    [1, 1.5, 2, 2.5, 2.5, 2.5, 2.5, 2, 1.5, 1],
+    [1, 1.5, 2, 2, 2, 2, 2, 2, 1.5, 1],
+    [1, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1],
+    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+  ];
 
-  for (let i = -gridSize / 2; i < gridSize / 2; i++) {
-    for (let j = -gridSize / 2; j < gridSize / 2; j++) {
-      const posX = i * spacing;
-      const posZ = j * spacing;
-      if (Math.abs(posX) <= 50 && Math.abs(posZ) <= 50) { // Ensure buildings spawn only within the platform
-        buildingPositions.push({
-          x: posX,
-          z: posZ,
-          width: 10 + Math.random() * 5,
-          depth: 10 + Math.random() * 5,
-        });
-      }
-    }
+  buildingPositions.forEach((row, i) => {
+    row.forEach((heightMultiplier, j) => {
+      const posX = (i - 5) * 20;
+      const posZ = (j - 5) * 20;
+      const height = heightMultiplier * 10;
+      const width = 10;
+      const depth = 10;
+      const buildingGeometry = new THREE.BoxGeometry(width, height, depth);
+      const buildingMaterial = new THREE.MeshStandardMaterial({ color: 0x333333 });
+      const building = new THREE.Mesh(buildingGeometry, buildingMaterial);
+      building.position.set(posX, height / 2, posZ);
+      building.castShadow = true;
+      building.receiveShadow = true;
+      scene.add(building);
+
+      const buildingBox = new THREE.Box3().setFromObject(building);
+      building.userData.collisionBox = buildingBox;
+      collidableObjects.push(building);
+    });
   }
 
   buildingPositions.forEach((pos) => {
