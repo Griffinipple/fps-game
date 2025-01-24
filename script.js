@@ -26,10 +26,10 @@ function startGame() {
 
   // Position the camera
   const spawnPoints = [
-    { x: -25, y: 2, z: -25 }, // Top-left corner
-    { x: 25, y: 2, z: -25 },  // Top-right corner
-    { x: -25, y: 2, z: 25 },  // Bottom-left corner
-    { x: 25, y: 2, z: 25 }    // Bottom-right corner
+    { x: -28, y: 2, z: -28 }, // Top-left corner
+    { x: 28, y: 2, z: -28 },  // Top-right corner
+    { x: -28, y: 2, z: 28 },  // Bottom-left corner
+    { x: 28, y: 2, z: 28 }    // Bottom-right corner
   ];
 
   const randomSpawn = spawnPoints[Math.floor(Math.random() * spawnPoints.length)];
@@ -177,10 +177,28 @@ let canDoubleJump = false; // Track double jump ability
     for (const object of collidableObjects) {
       const objectBox = new THREE.Box3().setFromObject(object);
       const playerBox = new THREE.Box3().setFromCenterAndSize(nextPosition, new THREE.Vector3(1, 2, 1));
+
+      // Check for collision with the sides of the object
       if (objectBox.intersectsBox(playerBox)) {
         collision = true;
         break;
       }
+
+      // Check if the player is landing on top of the object
+      if (
+        nextPosition.y <= objectBox.max.y + 0.1 && // Slight buffer to prevent floating
+        camera.position.y >= objectBox.max.y &&
+        nextPosition.x > objectBox.min.x &&
+        nextPosition.x < objectBox.max.x &&
+        nextPosition.z > objectBox.min.z &&
+        nextPosition.z < objectBox.max.z
+      ) {
+        camera.position.y = objectBox.max.y;
+        velocityY = 0;
+        canDoubleJump = true; // Allow double jump again
+        collision = true;
+      }
+    }
     }
 
     if (!collision) {
