@@ -17,6 +17,7 @@ playButton.addEventListener('click', () => {
 
 function startGame() {
   const collidableObjects = [];
+const verticalCollidableObjects = []; // Separate set for vertical collision handling
 const buildingPositions = [
     [1, 1, 1, 1, 1],
     [1, 2.25, 2.25, 2.25, 1],
@@ -136,13 +137,13 @@ const buildingPositions = [
       const platformMaterial = new THREE.MeshStandardMaterial({ color: 0xaaaaaa });
       const platform = new THREE.Mesh(platformGeometry, platformMaterial);
       platform.rotation.x = -Math.PI / 2; // Make it horizontal
-      platform.position.set(building.position.x, building.position.y + height / 2 + 0.1, building.position.z); // Position it at the top of the building
+      platform.position.set(building.position.x, building.position.y + height / 2 + 0.01, building.position.z); // Position it at the top of the building
       platform.receiveShadow = true;
       scene.add(platform);
       // Add platform to collidable objects
       const platformBox = new THREE.Box3().setFromObject(platform);
       platform.userData.collisionBox = platformBox;
-      collidableObjects.push(platform);
+      verticalCollidableObjects.push(platform);
       building.castShadow = true;
       building.receiveShadow = true;
       scene.add(building);
@@ -217,6 +218,31 @@ let canDoubleJump = false; // Track double jump ability
 
     let collision = false;
     for (const object of collidableObjects) {
+      const objectBox = new THREE.Box3().setFromObject(object);
+      const playerBox = new THREE.Box3().setFromCenterAndSize(nextPosition, new THREE.Vector3(1, 2, 1));
+
+      // Check for collision with the sides of the object
+      if (objectBox.intersectsBox(playerBox)) {
+        collision = true;
+        break;
+      }
+    }
+
+    for (const platform of verticalCollidableObjects) {
+      const platformBox = new THREE.Box3().setFromObject(platform);
+      if (
+        nextPosition.y <= platformBox.max.y + 0.3 && // Slightly increase buffer
+        camera.position.y >= platformBox.max.y - 0.3 &&
+        nextPosition.x >= platformBox.min.x &&
+        nextPosition.x <= platformBox.max.x &&
+        nextPosition.z >= platformBox.min.z &&
+        nextPosition.z <= platformBox.max.z
+      ) {
+        camera.position.y = platformBox.max.y; // Align player with the top of the platform
+        velocityY = 0; // Reset vertical velocity
+        canDoubleJump = true; // Allow double jump again
+        collision = true;
+      }
       const objectBox = new THREE.Box3().setFromObject(object);
       const playerBox = new THREE.Box3().setFromCenterAndSize(nextPosition, new THREE.Vector3(1, 2, 1));
 
