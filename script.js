@@ -26,10 +26,10 @@ function startGame() {
 
   // Position the camera
   const spawnPoints = [
-    { x: -40, y: 2, z: -40 },
-    { x: 40, y: 2, z: -40 },
-    { x: -40, y: 2, z: 40 },
-    { x: 40, y: 2, z: 40 }
+    { x: -50, y: 2, z: -50 }, // Top-left corner
+    { x: 50, y: 2, z: -50 },  // Top-right corner
+    { x: -50, y: 2, z: 50 },  // Bottom-left corner
+    { x: 50, y: 2, z: 50 }    // Bottom-right corner
   ];
 
   const randomSpawn = spawnPoints[Math.floor(Math.random() * spawnPoints.length)];
@@ -133,7 +133,7 @@ let canDoubleJump = false; // Track double jump ability
   const movementSpeed = 0.2;
 
   function updatePlayer() {
-    let direction = new THREE.Vector3();
+    let direction = new THREE.Vector3(); // Reset direction on every update
 
     const forward = new THREE.Vector3();
     camera.getWorldDirection(forward);
@@ -143,10 +143,10 @@ let canDoubleJump = false; // Track double jump ability
     const right = new THREE.Vector3();
     right.crossVectors(forward, new THREE.Vector3(0, 1, 0));
 
-    if (keys['w']) direction.add(forward);
-    if (keys['s']) direction.add(forward.negate());
-    if (keys['a']) direction.add(right.negate());
-    if (keys['d']) direction.add(right);
+    if (keys['w']) direction.add(forward.clone());
+    if (keys['s']) direction.add(forward.clone().negate());
+    if (keys['a']) direction.add(right.clone().negate());
+    if (keys['d']) direction.add(right.clone());
 
     direction.normalize();
 
