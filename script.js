@@ -38,8 +38,6 @@ function startGame() {
   directionalLight.castShadow = true;
   scene.add(directionalLight);
 
-  
-
   // Create Ground
   const groundGeometry = new THREE.PlaneGeometry(100, 100);
   const groundMaterial = new THREE.MeshStandardMaterial({ color: 0x808080 });
@@ -89,7 +87,7 @@ function startGame() {
   // Gun and Ammo System
   const loader = new THREE.GLTFLoader();
   let bulletsInClip = 30;
-let totalAmmo = Infinity; // Infinite total ammo for reloading
+  let totalAmmo = Infinity; // Infinite total ammo for reloading
   const clipSize = 30;
   const reloadTime = 1500; // 1.5 seconds
   let isReloading = false;
@@ -127,16 +125,15 @@ let totalAmmo = Infinity; // Infinite total ammo for reloading
   }
 
   function reload() {
-  if (totalAmmo > 0 && !isReloading) {
-    isReloading = true;
-    setTimeout(() => {
-      const ammoToReload = Math.min(clipSize, totalAmmo);
-      bulletsInClip = ammoToReload;
-      totalAmmo = totalAmmo === Infinity ? Infinity : totalAmmo - ammoToReload;
-      isReloading = false;
-    }, reloadTime);
-  }
-}, reloadTime);
+    if (totalAmmo > 0 && !isReloading) {
+      isReloading = true;
+      setTimeout(() => {
+        const ammoToReload = Math.min(clipSize, totalAmmo);
+        bulletsInClip = ammoToReload;
+        totalAmmo = totalAmmo === Infinity ? Infinity : totalAmmo - ammoToReload;
+        isReloading = false;
+      }, reloadTime);
+    }
   }
 
   window.addEventListener('mousedown', () => {
@@ -170,8 +167,24 @@ let totalAmmo = Infinity; // Infinite total ammo for reloading
       }
     }
   }
+
+  // Pointer Lock for Mouse Movement
+  const canvas = renderer.domElement;
+  canvas.requestPointerLock = canvas.requestPointerLock || canvas.mozRequestPointerLock;
+  document.exitPointerLock = document.exitPointerLock || document.mozExitPointerLock;
+
+  canvas.addEventListener('click', () => {
+    canvas.requestPointerLock();
+  });
+
+  document.addEventListener('mousemove', (event) => {
+    if (document.pointerLockElement === canvas) {
+      const sensitivity = 0.002;
+      camera.rotation.y -= event.movementX * sensitivity;
+      camera.rotation.x -= event.movementY * sensitivity;
+      camera.rotation.x = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, camera.rotation.x));
     }
-  }
+  });
 
   // WASD Movement with Gravity
   const keys = {};
