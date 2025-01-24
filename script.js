@@ -218,25 +218,32 @@ let canDoubleJump = false; // Track double jump ability
 
     let collision = false;
     for (const object of collidableObjects) {
-      
+      const objectBox = new THREE.Box3().setFromObject(object);
+      const playerBox = new THREE.Box3().setFromCenterAndSize(nextPosition, new THREE.Vector3(1, 2, 1));
+
+      if (objectBox.intersectsBox(playerBox)) {
+        collision = true;
+        break;
+      }
     }
 
     for (const platform of verticalCollidableObjects) {
       const platformBox = new THREE.Box3().setFromObject(platform);
       if (
-        nextPosition.y <= platformBox.max.y + 0.3 && // Slightly increase buffer
+        nextPosition.y <= platformBox.max.y + 0.3 &&
         camera.position.y >= platformBox.max.y - 0.3 &&
         nextPosition.x >= platformBox.min.x &&
         nextPosition.x <= platformBox.max.x &&
         nextPosition.z >= platformBox.min.z &&
         nextPosition.z <= platformBox.max.z
       ) {
-        camera.position.y = platformBox.max.y; // Align player with the top of the platform
-        velocityY = 0; // Reset vertical velocity
-        canDoubleJump = true; // Allow double jump again
+        camera.position.y = platformBox.max.y;
+        velocityY = 0;
+        canDoubleJump = true;
         collision = true;
         break;
       }
+    }
     }
       
 
