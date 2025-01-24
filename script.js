@@ -2,7 +2,6 @@
 const lobby = document.getElementById('lobby');
 const playButton = document.getElementById('play-button');
 const gameDiv = document.getElementById('game');
-const collidableObjects = [];
 
 // Play button click event
 playButton.addEventListener('click', () => {
@@ -17,6 +16,7 @@ playButton.addEventListener('click', () => {
 });
 
 function startGame() {
+  const collidableObjects = [];
   // Create Scene, Camera, and Renderer
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
