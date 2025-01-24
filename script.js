@@ -57,14 +57,14 @@ function startGame() {
   const pyramidMaterial = new THREE.MeshStandardMaterial({ color: 0x8b0000 }); // Red pyramids
 
   const pyramidPositions = [
-    { x: -30, z: -30 },
-    { x: -30, z: 30 },
-    { x: 30, z: -30 },
-    { x: 30, z: 30 },
-    { x: 0, z: -30 },
-    { x: 0, z: 30 },
-    { x: -30, z: 0 },
-    { x: 30, z: 0 },
+    { x: -20, z: -20 },
+    { x: -20, z: 20 },
+    { x: 20, z: -20 },
+    { x: 20, z: 20 },
+    { x: 0, z: -20 },
+    { x: 0, z: 20 },
+    { x: -20, z: 0 },
+    { x: 20, z: 0 },
   ];
 
   const collidableObjects = []; // Collect pyramids for collision detection
