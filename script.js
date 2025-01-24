@@ -245,6 +245,7 @@ let canDoubleJump = false; // Track double jump ability
       }
     }
     }
+    }
       
 
       // Check if the player is landing on top of the object
