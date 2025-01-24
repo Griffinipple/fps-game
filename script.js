@@ -26,6 +26,7 @@ class Game {
   setupRenderer() {
     this.renderer.setSize(window.innerWidth, window.innerHeight);
     this.renderer.shadowMap.enabled = true;
+    this.renderer.setClearColor(0x000000); // Black canvas background
     window.addEventListener('resize', () => {
       this.camera.aspect = window.innerWidth / window.innerHeight;
       this.camera.updateProjectionMatrix();
@@ -236,6 +237,9 @@ class HUD {
     this.hud.style.left = '10px';
     this.hud.style.color = 'white';
     this.hud.style.fontSize = '20px';
+    this.hud.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+    this.hud.style.padding = '10px';
+    this.hud.style.borderRadius = '5px';
     this.hud.style.zIndex = '1000';
     document.body.appendChild(this.hud);
   }
@@ -294,3 +298,39 @@ link.rel = 'icon';
 link.type = 'image/jpeg';
 link.href = 'favicon.jpg';
 document.head.appendChild(link);
+
+// Style Adjustments for Game and Lobby
+const style = document.createElement('style');
+style.textContent = `
+  #game-canvas {
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: black;
+  }
+  #lobby {
+    display: block;
+    position: absolute;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    font-size: 2rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+  }
+  #game {
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+  }
+`;
+document.head.appendChild(style);
