@@ -52,27 +52,30 @@ function startGame() {
   ground.receiveShadow = true;
   scene.add(ground);
 
-  // Surround the Ground with Pyramids
-  const pyramidGeometry = new THREE.ConeGeometry(3, 6, 4);
+  // Surround the Ground with Larger, Less Steep Pyramids
+  const pyramidGeometry = new THREE.ConeGeometry(10, 5, 4); // Larger base, less steep height
   const pyramidMaterial = new THREE.MeshStandardMaterial({ color: 0x8b0000 }); // Red pyramids
 
   const pyramidPositions = [
-    { x: -25, z: -25 },
-    { x: -25, z: 25 },
-    { x: 25, z: -25 },
-    { x: 25, z: 25 },
-    { x: 0, z: -25 },
-    { x: 0, z: 25 },
-    { x: -25, z: 0 },
-    { x: 25, z: 0 },
+    { x: -30, z: -30 },
+    { x: -30, z: 30 },
+    { x: 30, z: -30 },
+    { x: 30, z: 30 },
+    { x: 0, z: -30 },
+    { x: 0, z: 30 },
+    { x: -30, z: 0 },
+    { x: 30, z: 0 },
   ];
+
+  const collidableObjects = []; // Collect pyramids for collision detection
 
   pyramidPositions.forEach((pos) => {
     const pyramid = new THREE.Mesh(pyramidGeometry, pyramidMaterial);
-    pyramid.position.set(pos.x, 3, pos.z); // Raise above ground
+    pyramid.position.set(pos.x, 2.5, pos.z); // Adjust height to align with the ground
     pyramid.castShadow = true;
     pyramid.receiveShadow = true;
     scene.add(pyramid);
+    collidableObjects.push(pyramid); // Add pyramid to collidable objects
   });
 
   // Pointer Lock for Mouse Look
@@ -110,9 +113,6 @@ function startGame() {
   let velocityY = 0; // Vertical velocity for jumping
   const gravity = -0.005; // Gravity affecting the player
   const jumpStrength = 0.15; // Jump height
-
-  // Collision Detection Setup
-  const collidableObjects = [];
 
   function checkCollision(position) {
     const cameraBox = new THREE.Box3().setFromCenterAndSize(position, new THREE.Vector3(1, 1, 1));
