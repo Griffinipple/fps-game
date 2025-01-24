@@ -274,7 +274,6 @@ let canDoubleJump = false; // Track double jump ability
       canDoubleJump = true; // Reset double jump when touching the ground
     }
   }
-    }
       
 
       // Check if the player is landing on top of the object
