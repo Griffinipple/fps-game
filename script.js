@@ -241,6 +241,10 @@ let collidableObjects = []; // Store objects for collision detection
     if (onLadder) {
       velocityY = 0.05; // Constant upward velocity when on ladder
     } else {
+      if (keys[' '] && !isJumping) {
+        velocityY = jumpStrength; // Jump
+        isJumping = true; // Prevent double jump
+      }
       velocityY += gravity;
     }
 
