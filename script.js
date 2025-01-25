@@ -1,5 +1,5 @@
 // Get the canvas and context
-let scene, camera, renderer, player, platform, block;
+let scene, camera, renderer, player, platform, block, projectile;
 
 // Define the player properties
 let playerProperties = {
@@ -13,7 +13,8 @@ let playerProperties = {
     jumpSpeed: 10,
     gravity: 0.5,
     doubleJump: false,
-    onGround: false
+    onGround: false,
+    health: 100
 };
 
 // Define the platform properties
@@ -34,6 +35,17 @@ let blockProperties = {
     width: 10,
     height: 10,
     depth: 10
+};
+
+// Define the projectile properties
+let projectileProperties = {
+    x: 0,
+    y: 0,
+    z: 0,
+    velocityX: 0,
+    velocityY: 0,
+    velocityZ: 0,
+    speed: 10
 };
 
 // Define the game state
@@ -89,6 +101,46 @@ function init() {
     block.position.y = blockProperties.y;
     block.position.z = blockProperties.z;
     scene.add(block);
+
+    // Create the health bar
+    let healthBar = document.createElement('div');
+    healthBar.style.position = 'absolute';
+    healthBar.style.top = '10px';
+    healthBar.style.left = '10px';
+    healthBar.style.width = '200px';
+    healthBar.style.height = '20px';
+    healthBar.style.backgroundColor = 'red';
+    healthBar.style.border = '1px solid black';
+    document.body.appendChild(healthBar);
+
+    // Lock the cursor
+    document.addEventListener('mousemove', (e) => {
+        if (gameState === 'game') {
+            let movementX = e.movementX || e.mozMovementX || e.webkitMovementX;
+            let movementY = e.movementY || e.mozMovementY || e.webkitMovementY;
+            camera.rotation.x += movementY * 0.01;
+            camera.rotation.y += movementX * 0.01;
+        }
+    });
+
+    // Shoot projectile
+    document.addEventListener('click', () => {
+        if (gameState === 'game') {
+            let projectileGeometry = new THREE.SphereGeometry(1, 32, 32);
+            let projectileMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+            projectile = new THREE.Mesh(projectileGeometry, projectileMaterial);
+            projectile.position.x = player.position.x;
+            projectile.position.y = player.position.y;
+            projectile.position.z = player.position.z;
+            scene.add(projectile);
+            projectileProperties.x = player.position.x;
+            projectileProperties.y = player.position.y;
+            projectileProperties.z = player.position.z;
+            projectileProperties.velocityX = Math.sin(camera.rotation.y) * projectileProperties.speed;
+            projectileProperties.velocityY = Math.sin(camera.rotation.x) * projectileProperties.speed;
+            projectileProperties.velocityZ = Math.cos(camera.rotation.y) * projectileProperties.speed;
+        }
+    });
 }
 
 // Animate the scene
@@ -145,6 +197,13 @@ function animate() {
         } else if (isKeyPressed(' ') && !playerProperties.onGround && !playerProperties.doubleJump) {
             playerProperties.velocityY = -playerProperties.jumpSpeed;
             playerProperties.doubleJump = true;
+        }
+
+        // Update the projectile position
+        if (projectile) {
+            projectile.position.x += projectileProperties.velocityX;
+            projectile.position.y += projectileProperties.velocityY;
+            projectile.position.z += projectileProperties.velocityZ;
         }
 
         // Render the scene
