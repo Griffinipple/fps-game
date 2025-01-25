@@ -167,7 +167,9 @@ function setupControls(camera, collidableObjects) {
 
   let velocityY = 0;
   const gravity = -0.01;
-  const movementSpeed = 0.2;
+  const baseSpeed = 0.3;
+  const sprintMultiplier = 1.5;
+  const jumpStrength = 0.2;
   const smoothFactor = 0.9;
   let velocity = new THREE.Vector3();
 
@@ -181,6 +183,9 @@ function setupControls(camera, collidableObjects) {
 
     const right = new THREE.Vector3();
     right.crossVectors(forward, new THREE.Vector3(0, 1, 0));
+
+    let movementSpeed = baseSpeed;
+    if (keys['shift']) movementSpeed *= sprintMultiplier;
 
     if (keys['w']) direction.add(forward);
     if (keys['s']) direction.add(forward.clone().negate());
@@ -208,9 +213,12 @@ function setupControls(camera, collidableObjects) {
       camera.position.z += velocity.z;
     }
 
+    if (keys[' '] && Math.abs(velocityY) < 0.01) {
+      velocityY = jumpStrength;
+    }
+
     camera.rotation.y -= mouseMovement.x;
     camera.rotation.x = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, camera.rotation.x - mouseMovement.y));
-    camera.rotation.x = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, camera.rotation.x));
 
     mouseMovement.x = 0;
     mouseMovement.y = 0;
