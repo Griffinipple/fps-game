@@ -159,12 +159,12 @@ function startGame() {
     const right = new THREE.Vector3();
     right.crossVectors(forward, new THREE.Vector3(0, 1, 0));
 
-    if (keys['w']) direction.add(forward.clone());
+    if (keys['w']) direction.add(forward);
     if (keys['s']) direction.add(forward.clone().negate());
     if (keys['a']) direction.add(right.clone().negate());
-    if (keys['d']) direction.add(right.clone());
+    if (keys['d']) direction.add(right);
 
-    direction.normalize();
+    if (direction.length() > 0) direction.normalize();
 
     const nextPosition = camera.position.clone().add(direction.multiplyScalar(movementSpeed));
 
@@ -178,15 +178,20 @@ function startGame() {
       }
     }
 
+    if (!collision) {
+      camera.position.x = nextPosition.x;
+      camera.position.z = nextPosition.z;
+    }
+
     for (const platform of verticalCollidableObjects) {
       const platformBox = new THREE.Box3().setFromObject(platform);
       if (
-        nextPosition.y <= platformBox.max.y + 0.3 &&
         camera.position.y >= platformBox.max.y - 0.3 &&
-        nextPosition.x >= platformBox.min.x &&
-        nextPosition.x <= platformBox.max.x &&
-        nextPosition.z >= platformBox.min.z &&
-        nextPosition.z <= platformBox.max.z
+        nextPosition.y <= platformBox.max.y + 0.3 &&
+        camera.position.x >= platformBox.min.x &&
+        camera.position.x <= platformBox.max.x &&
+        camera.position.z >= platformBox.min.z &&
+        camera.position.z <= platformBox.max.z
       ) {
         camera.position.y = platformBox.max.y;
         velocityY = 0;
@@ -196,12 +201,15 @@ function startGame() {
       }
     }
 
-    if (!collision) {
-      camera.position.copy(nextPosition);
-    }
-
     velocityY += gravity;
     camera.position.y += velocityY;
+
+    const groundLevel = 1;
+    if (camera.position.y < groundLevel) {
+      camera.position.y = groundLevel;
+      velocityY = 0;
+      canDoubleJump = true;
+    }
 
     const groundLevel = 1;
     if (camera.position.y < groundLevel) {
