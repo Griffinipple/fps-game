@@ -113,7 +113,7 @@ function startGame() {
   let isJumping = false; // To prevent double-jumping
   let velocityY = 0; // Vertical velocity for jumping
   const gravity = -0.02; // Increased gravity affecting the player
-  const jumpStrength = 0.15; // Jump height
+  const jumpStrength = 0.45; // Jump height
 
   function updatePlayer() {
     const speed = 0.2; // Increased movement speed for smoother and faster movement
