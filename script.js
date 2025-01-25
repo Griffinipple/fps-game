@@ -24,7 +24,7 @@ function startGame() {
   renderer.shadowMap.enabled = true;
 
   // Position the camera
-  camera.position.set(0, 2, 5); // Start above the ground
+  camera.position.set(15, 2, 15); // Spawn away from the tower
   camera.rotation.order = "YXZ"; // Use YXZ order for proper FPS-style rotations
 
   // Add Ambient Light
@@ -60,6 +60,9 @@ function startGame() {
   tower.castShadow = true;
   tower.receiveShadow = true;
   scene.add(tower);
+
+  // Add collision detection for the tower
+  const towerBox = new THREE.Box3().setFromObject(tower);
 
   // Pointer Lock for Mouse Look
   const canvas = renderer.domElement;
@@ -106,8 +109,8 @@ function startGame() {
     const right = new THREE.Vector3(Math.sin(yaw + Math.PI / 2), 0, -Math.cos(yaw + Math.PI / 2));
 
     // Adjust movement direction based on key presses (reversed directions)
-    if (keys['w']) direction.add(forward.negate()); // Reverse forward
-    if (keys['s']) direction.add(forward); // Normal backward
+    if (keys['w']) direction.add(forward); // Reverse forward
+    if (keys['s']) direction.add(forward.negate()); // Normal backward
     if (keys['a']) direction.add(right.negate()); // Reverse right
     if (keys['d']) direction.add(right); // Normal left
 
@@ -115,7 +118,13 @@ function startGame() {
     direction.normalize();
 
     // Move the camera
-    camera.position.add(direction.multiplyScalar(speed));
+    const nextPosition = camera.position.clone().add(direction.multiplyScalar(speed));
+    const playerBox = new THREE.Box3().setFromCenterAndSize(nextPosition, new THREE.Vector3(1, 1, 1));
+
+    // Check for collision with the tower
+    if (!towerBox.intersectsBox(playerBox)) {
+      camera.position.copy(nextPosition);
+    }
 
     // Handle jumping
     if (keys[' ']) {
