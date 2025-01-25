@@ -53,16 +53,31 @@ function startGame() {
   scene.add(platform);
 
   // Create Gray Tower in the Center
-  const towerGeometry = new THREE.CylinderGeometry(5, 5, 50, 32);
-  const towerMaterial = new THREE.MeshStandardMaterial({ color: 0x808080 }); // Gray color for the tower
+  const towerGeometry = new THREE.BoxGeometry(10, 5, 10); // Shorten block to allow jumping onto it
+  const towerMaterial = new THREE.MeshStandardMaterial({ color: 0x808080 }); // Gray color for the block
   const tower = new THREE.Mesh(towerGeometry, towerMaterial);
-  tower.position.set(0, 25, 0); // Center the tower
+  tower.position.set(0, 2.5, 0); // Adjust position to match new height
   tower.castShadow = true;
   tower.receiveShadow = true;
   scene.add(tower);
 
   // Add collision detection for the tower
   const towerBox = new THREE.Box3().setFromObject(tower);
+
+  function handleTowerCollision() {
+    // Check if player is above or within the tower's horizontal bounds
+    const withinTowerX = camera.position.x >= towerBox.min.x && camera.position.x <= towerBox.max.x;
+    const withinTowerZ = camera.position.z >= towerBox.min.z && camera.position.z <= towerBox.max.z;
+
+    if (withinTowerX && withinTowerZ) {
+      // Set player on top of the tower if within vertical range
+      if (camera.position.y < towerBox.max.y) {
+        camera.position.y = towerBox.max.y;
+        velocityY = 0; // Reset vertical velocity
+        isJumping = false; // Allow jumping again
+      }
+    }
+  }
 
   // Pointer Lock for Mouse Look
   const canvas = renderer.domElement;
@@ -97,7 +112,7 @@ function startGame() {
 
   let isJumping = false; // To prevent double-jumping
   let velocityY = 0; // Vertical velocity for jumping
-  const gravity = -0.005; // Gravity affecting the player
+  const gravity = -0.02; // Increased gravity affecting the player
   const jumpStrength = 0.15; // Jump height
 
   function updatePlayer() {
