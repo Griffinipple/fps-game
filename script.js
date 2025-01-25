@@ -39,36 +39,27 @@ function startGame() {
 
   // Add a Sun Sphere
   const sunGeometry = new THREE.SphereGeometry(3, 32, 32); // Increase the size of the sun
-  const sunMaterial = new THREE.MeshBasicMaterial({ color: 0xffcc00, emissive: 0xffdd88 });
+  const sunMaterial = new THREE.MeshBasicMaterial({ color: 0xffcc00 });
   const sun = new THREE.Mesh(sunGeometry, sunMaterial);
   sun.position.set(0, 50, 0); // Match the position of the directional light
   scene.add(sun);
 
-  // Load Environment Model
-  const loader = new THREE.GLTFLoader();
-  loader.load('/assets/models/environment.glb', (gltf) => {
-    const environment = gltf.scene;
+  // Create Brown Platform
+  const platformGeometry = new THREE.PlaneGeometry(100, 100);
+  const platformMaterial = new THREE.MeshStandardMaterial({ color: 0x8B4513 }); // Brown color for the platform
+  const platform = new THREE.Mesh(platformGeometry, platformMaterial);
+  platform.rotation.x = -Math.PI / 2; // Rotate to lay flat
+  platform.receiveShadow = true;
+  scene.add(platform);
 
-    // Compute the bounding box of the environment to position it properly
-    const box = new THREE.Box3().setFromObject(environment);
-    const size = new THREE.Vector3();
-    const center = new THREE.Vector3();
-    box.getSize(size); // Get the size of the bounding box
-    box.getCenter(center); // Get the center of the bounding box
-
-    // Adjust the environment's position to place it under the camera
-    environment.position.set(-center.x, -center.y, -center.z); // Center the environment
-    environment.position.y -= 2; // Lower it slightly so the camera is above it
-
-    environment.traverse((child) => {
-      if (child.isMesh) {
-        child.castShadow = true;
-        child.receiveShadow = true;
-      }
-    });
-
-    scene.add(environment);
-  });
+  // Create Gray Tower in the Center
+  const towerGeometry = new THREE.CylinderGeometry(5, 5, 50, 32);
+  const towerMaterial = new THREE.MeshStandardMaterial({ color: 0x808080 }); // Gray color for the tower
+  const tower = new THREE.Mesh(towerGeometry, towerMaterial);
+  tower.position.set(0, 25, 0); // Center the tower
+  tower.castShadow = true;
+  tower.receiveShadow = true;
+  scene.add(tower);
 
   // Pointer Lock for Mouse Look
   const canvas = renderer.domElement;
