@@ -70,14 +70,14 @@ function startGame() {
     const withinTowerZ = camera.position.z >= towerBox.min.z && camera.position.z <= towerBox.max.z;
 
     if (withinTowerX && withinTowerZ) {
-      // Set player on top of the tower if within vertical range
-      if (camera.position.y <= towerBox.max.y && camera.position.y >= towerBox.min.y) {
-        camera.position.y = towerBox.max.y;
-        velocityY = 0; // Reset vertical velocity
-        isJumping = false; // Allow jumping again
-      }
+        const distanceY = camera.position.y - towerBox.max.y;
+        if (distanceY <= 1.5 && velocityY <= 0) { // Close to the top of the block and falling
+            camera.position.y = towerBox.max.y + 1; // Position the player on top of the block
+            velocityY = 0; // Reset vertical velocity
+            isJumping = false; // Allow jumping again
+        }
     }
-  }
+}
 
   // Pointer Lock for Mouse Look
   const canvas = renderer.domElement;
