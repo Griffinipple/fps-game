@@ -46,7 +46,7 @@ function startGame() {
 
   // Create Brown Platform
   const platformGeometry = new THREE.PlaneGeometry(100, 100);
-  const platformMaterial = new THREE.MeshStandardMaterial({ color: 0x8B4513 }); // Brown color for the platform
+  const platformMaterial = new THREE.MeshStandardMaterial({ color: 0x9c7f17 }); // Updated brown color for the platform
   const platform = new THREE.Mesh(platformGeometry, platformMaterial);
   platform.rotation.x = -Math.PI / 2; // Rotate to lay flat
   platform.receiveShadow = true;
@@ -105,8 +105,12 @@ function startGame() {
     const direction = new THREE.Vector3(); // Movement direction
 
     // Calculate forward and right vectors based on camera rotation
-    const forward = new THREE.Vector3(Math.sin(yaw), 0, -Math.cos(yaw));
-    const right = new THREE.Vector3(Math.sin(yaw + Math.PI / 2), 0, -Math.cos(yaw + Math.PI / 2));
+    const forward = new THREE.Vector3();
+    camera.getWorldDirection(forward);
+    forward.y = 0; // Ignore vertical movement
+    forward.normalize();
+    const right = new THREE.Vector3();
+    right.crossVectors(forward, new THREE.Vector3(0, 1, 0)); // Right vector is perpendicular to forward and up
 
     // Adjust movement direction based on key presses
     if (keys['w']) direction.add(forward); // Move forward
