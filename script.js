@@ -167,11 +167,11 @@ function startGame() {
     if (withinTowerX && withinTowerZ) {
       const platformHeight = 5.003; // Platform height
       if (camera.position.y <= platformHeight && camera.position.y >= towerBox.max.y) {
-        camera.position.y = platformHeight + 0.1; // Place player slightly above the platform
+        camera.position.y = platformHeight + 0.2; // Place player slightly higher above the platform
         velocityY = 0; // Reset vertical velocity
         isJumping = false; // Allow jumping again
       } else if (camera.position.y < towerBox.max.y && camera.position.y >= towerBox.min.y) {
-        camera.position.y = towerBox.max.y + 0.1; // Place player slightly above the block
+        camera.position.y = towerBox.max.y + 0.2; // Place player slightly higher above the block
         velocityY = 0; // Reset vertical velocity
         isJumping = false; // Allow jumping again
       }
