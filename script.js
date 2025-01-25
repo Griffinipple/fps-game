@@ -272,11 +272,5 @@ if (camera.position.y < 1) {
 }  }
 
   // Game Loop
-  function animate() {
-    requestAnimationFrame(animate);
-    updatePlayer();
-    renderer.render(scene, camera);
-  }
-
-  animate();
-}
+    $1
+} // Close startGame function
