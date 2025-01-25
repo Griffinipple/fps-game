@@ -153,7 +153,7 @@ function startGame() {
 
     for (const intersect of intersects) {
       if (intersect.object.material && intersect.object.material.color.getHex() === 0x9c7f17) { // Check for brown ground
-        if (camera.position.y - intersect.point.y <= 1.5 && velocityY <= 0) {
+        if (camera.position.y - intersect.point.y <= 1.5 && velocityY <= 0 && !keys[' ']) {
           camera.position.y = intersect.point.y + 1; // Adjust height above the ground
           velocityY = 0; // Reset vertical velocity
           isJumping = false; // Allow jumping again
