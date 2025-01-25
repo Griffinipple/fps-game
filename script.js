@@ -37,13 +37,7 @@ function startGame() {
   directionalLight.castShadow = true;
   scene.add(directionalLight);
 
-  // Add a Sun Sphere
-  const sunGeometry = new THREE.SphereGeometry(3, 32, 32); // Increase the size of the sun
-  const sunMaterial = new THREE.MeshBasicMaterial({ color: 0xffcc00 });
-  const sun = new THREE.Mesh(sunGeometry, sunMaterial);
-  sun.position.set(0, 50, 0); // Match the position of the directional light
-  scene.add(sun);
-
+  
   // Create Brown Platform
   const platformGeometry = new THREE.PlaneGeometry(100, 100);
   const platformMaterial = new THREE.MeshStandardMaterial({ color: 0x9c7f17 }); // Updated brown color for the platform
@@ -63,7 +57,7 @@ function startGame() {
 
   // Create a platform directly on top of the block
   const topPlatformGeometry = new THREE.PlaneGeometry(10, 10);
-  const topPlatformMaterial = new THREE.MeshStandardMaterial({ color: 0xd3d3d3 }); // Light gray color for the platform // Same color as the ground
+  const topPlatformMaterial = new THREE.MeshStandardMaterial({ color: 0xd3d3d3 }); // Light gray color for the platform
   const topPlatform = new THREE.Mesh(topPlatformGeometry, topPlatformMaterial);
   topPlatform.rotation.x = -Math.PI / 2; // Rotate to be horizontal
   topPlatform.position.set(0, 5.003, 0); // Raise the platform slightly higher
@@ -91,11 +85,12 @@ function startGame() {
         velocityY = 0; // Reset vertical velocity
         isJumping = false; // Allow jumping again
       }
-    } else {
-      camera.position.copy(nextPosition); // Allow movement if no collision
     }
-      camera.position.copy(nextPosition); // Allow movement if no collision
-    }
+  }
+
+  // Handle player physics
+  function updatePlayer() {
+    handleTowerCollision();
 
     // Handle jumping
     if (keys[' ']) {
