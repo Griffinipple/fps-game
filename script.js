@@ -193,8 +193,9 @@ let canDoubleJump = false; // Track double jump ability
   const movementSpeed = 0.2;
 
   function updatePlayer() {
-    let direction = new THREE.Vector3(); // Reset direction on every update
+    let direction = new THREE.Vector3(); // Reset direction
 
+    // Calculate movement direction
     const forward = new THREE.Vector3();
     camera.getWorldDirection(forward);
     forward.y = 0;
@@ -203,48 +204,66 @@ let canDoubleJump = false; // Track double jump ability
     const right = new THREE.Vector3();
     right.crossVectors(forward, new THREE.Vector3(0, 1, 0));
 
-    if (keys['w']) direction.add(forward.clone());
+    if (keys['w']) direction.add(forward);
     if (keys['s']) direction.add(forward.clone().negate());
     if (keys['a']) direction.add(right.clone().negate());
-    if (keys['d']) direction.add(right.clone());
+    if (keys['d']) direction.add(right);
 
-    direction.normalize();
+    if (direction.length() > 0) direction.normalize();
 
     const nextPosition = camera.position.clone().add(direction.multiplyScalar(movementSpeed));
 
-    let collision = false;
+    // Handle horizontal collision
+    let horizontalCollision = false;
     for (const object of collidableObjects) {
-      const objectBox = new THREE.Box3().setFromObject(object);
-      const playerBox = new THREE.Box3().setFromCenterAndSize(nextPosition, new THREE.Vector3(1, 2, 1));
+        const objectBox = new THREE.Box3().setFromObject(object);
+        const playerBox = new THREE.Box3().setFromCenterAndSize(nextPosition, new THREE.Vector3(1, 2, 1));
 
-      // Check for collision with the sides of the object
-      if (objectBox.intersectsBox(playerBox)) {
-        collision = true;
-        break;
-      }
-
-      // Check if the player is landing on top of the object
-      if (
-        nextPosition.y <= objectBox.max.y + 0.1 && // Adjust buffer for precision
-        camera.position.y >= objectBox.max.y - 0.1 &&
-        nextPosition.x >= objectBox.min.x &&
-        nextPosition.x <= objectBox.max.x &&
-        nextPosition.z >= objectBox.min.z &&
-        nextPosition.z <= objectBox.max.z
-      ) {
-        camera.position.y = objectBox.max.y; // Snap to the top
-        velocityY = 0; // Stop vertical velocity
-        canDoubleJump = true; // Enable double jump
-        collision = true;
-        break;
-      }
+        if (objectBox.intersectsBox(playerBox)) {
+            horizontalCollision = true;
+            break;
+        }
     }
 
-    if (!collision) {
-      camera.position.copy(nextPosition);
+    if (!horizontalCollision) {
+        camera.position.x = nextPosition.x;
+        camera.position.z = nextPosition.z;
     }
 
-    velocityY += gravity;
+    // Handle vertical collision
+    let onPlatform = false;
+    for (const object of collidableObjects) {
+        const objectBox = new THREE.Box3().setFromObject(object);
+        if (
+            camera.position.y >= objectBox.max.y - 0.05 &&
+            camera.position.y <= objectBox.max.y + 0.1 &&
+            camera.position.x >= objectBox.min.x &&
+            camera.position.x <= objectBox.max.x &&
+            camera.position.z >= objectBox.min.z &&
+            camera.position.z <= objectBox.max.z
+        ) {
+            camera.position.y = objectBox.max.y;
+            velocityY = 0; // Stop vertical movement
+            canDoubleJump = true; // Enable double jump
+            onPlatform = true;
+            break;
+        }
+    }
+
+    // Apply gravity if not on a platform
+    if (!onPlatform) {
+        const maxFallSpeed = -0.3; // Limit fall speed
+        velocityY = Math.max(velocityY + gravity, maxFallSpeed);
+        camera.position.y += velocityY;
+
+        const groundLevel = 1; // Ground height
+        if (camera.position.y < groundLevel) {
+            camera.position.y = groundLevel;
+            velocityY = 0;
+            canDoubleJump = true;
+        }
+    }
+}
     const groundLevel = 1; // Height of the ground
     camera.position.y += velocityY;
     if (camera.position.y < groundLevel) {
