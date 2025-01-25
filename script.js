@@ -63,10 +63,10 @@ function startGame() {
 
   // Create a platform directly on top of the block
   const topPlatformGeometry = new THREE.PlaneGeometry(10, 10);
-  const topPlatformMaterial = new THREE.MeshStandardMaterial({ color: 0x9c7f17 }); // Same color as the ground
+  const topPlatformMaterial = new THREE.MeshStandardMaterial({ color: 0xd3d3d3 }); // Light gray color for the platform // Same color as the ground
   const topPlatform = new THREE.Mesh(topPlatformGeometry, topPlatformMaterial);
   topPlatform.rotation.x = -Math.PI / 2; // Rotate to be horizontal
-  topPlatform.position.set(0, 5.001, 0); // Position slightly above the tower
+  topPlatform.position.set(0, 5.003, 0); // Raise the platform slightly higher
   topPlatform.receiveShadow = true;
   scene.add(topPlatform);
 
