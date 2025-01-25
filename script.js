@@ -210,6 +210,23 @@ let canDoubleJump = false; // Track double jump ability
 
       // Check if the player is landing on top of the object
       if (
+        nextPosition.y <= objectBox.max.y + 0.1 && // Adjust buffer for precision
+        camera.position.y >= objectBox.max.y - 0.1 &&
+        nextPosition.x >= objectBox.min.x &&
+        nextPosition.x <= objectBox.max.x &&
+        nextPosition.z >= objectBox.min.z &&
+        nextPosition.z <= objectBox.max.z
+      ) {
+        camera.position.y = objectBox.max.y; // Snap to the top
+        velocityY = 0; // Stop vertical velocity
+        canDoubleJump = true; // Enable double jump
+        collision = true;
+        break;
+      }
+      }
+
+      // Check if the player is landing on top of the object
+      if (
         nextPosition.y <= objectBox.max.y + 0.3 && // Slightly increase buffer
         camera.position.y >= objectBox.max.y - 0.3 &&
         nextPosition.x >= objectBox.min.x &&
