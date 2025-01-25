@@ -16,7 +16,6 @@ playButton.addEventListener('click', () => {
 });
 
 function startGame() {
-  const collidableObjects = [];
   // Create Scene, Camera, and Renderer
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -40,122 +39,36 @@ function startGame() {
 
   // Add a Sun Sphere
   const sunGeometry = new THREE.SphereGeometry(3, 32, 32); // Increase the size of the sun
-  const sunMaterial = new THREE.MeshBasicMaterial({ color: 0xffcc00 });
+  const sunMaterial = new THREE.MeshBasicMaterial({ color: 0xffcc00, emissive: 0xffdd88 });
   const sun = new THREE.Mesh(sunGeometry, sunMaterial);
   sun.position.set(0, 50, 0); // Match the position of the directional light
   scene.add(sun);
 
-  // Create Ground and Roads
-  const groundGeometry = new THREE.PlaneGeometry(100, 100);
-  const groundMaterial = new THREE.MeshStandardMaterial({ color: 0x808080 }); // Gray ground for roads
-  const ground = new THREE.Mesh(groundGeometry, groundMaterial);
-  ground.rotation.x = -Math.PI / 2; // Rotate to lay flat
-  ground.receiveShadow = true;
-  scene.add(ground);
-
-  // Add Rectangular Buildings with Ladders
-  const buildingMaterial = new THREE.MeshStandardMaterial({ color: 0x333333 }); // Dark gray buildings
-  const ladderMaterial = new THREE.MeshStandardMaterial({ color: 0x00ff00 }); // Light gray ladders
-
-  const buildingHeights = [10, 15, 20, 25, 30]; // Possible heights for buildings
-
-  const buildingPositions = [
-    { x: -20, z: -20, width: 10, depth: 10 },
-    { x: 20, z: -20, width: 15, depth: 10 },
-    { x: -20, z: 20, width: 12, depth: 12 },
-    { x: 20, z: 20, width: 10, depth: 15 },
-  ];
-
-  buildingPositions.forEach((pos) => {
-    const height = buildingHeights[Math.floor(Math.random() * buildingHeights.length)]; // Random height
-    const buildingGeometry = new THREE.BoxGeometry(pos.width, height, pos.depth);
-    const building = new THREE.Mesh(buildingGeometry, buildingMaterial);
-    building.position.set(pos.x, height / 2, pos.z); // Position above the ground
-    building.castShadow = true;
-    building.receiveShadow = true;
-    scene.add(building);
-
-    // Add collision detection for the building
-    const buildingBox = new THREE.Box3().setFromObject(building);
-    building.userData.collisionBox = buildingBox;
-    collidableObjects.push(building);
-
-    // Add a ladder to one side of the building
-    const ladderGeometry = new THREE.BoxGeometry(2, height, 0.5);
-    const ladder = new THREE.Mesh(ladderGeometry, ladderMaterial);
-    ladder.position.set(pos.x - pos.width / 2 - 1, height / 2, pos.z); // Position ladder on the side of the building
-    ladder.castShadow = true;
-    ladder.receiveShadow = true;
-    scene.add(ladder);
-  });
-
-  let onLadder = false;
-
-
-  function checkLadderCollision() {
-    const ladders = scene.children.filter((child) => child.geometry && child.geometry.type === 'BoxGeometry' && child.material.color.getHex() === 0x00ff00);
-    for (const ladder of ladders) {
-      const ladderBox = new THREE.Box3().setFromObject(ladder);
-      const playerBox = new THREE.Box3().setFromCenterAndSize(camera.position, new THREE.Vector3(1, 1, 1));
-      if (ladderBox.intersectsBox(playerBox)) {
-        return true;
-      }
-    }
-    return false;
-}
-
-  // Load and Add Gun Model to the Bottom Right of the Screen
+  // Load Environment Model
   const loader = new THREE.GLTFLoader();
-  loader.load('/assets/models/weapon.glb', (gltf) => {
-    const gun = gltf.scene;
-    gun.scale.set(0.5, 0.5, 0.5); // Adjust the scale of the gun
-    gun.position.set(0.6, -0.5, -1); // Position the gun in front of the camera
-    gun.rotation.set(0, Math.PI / 2, 0); // Rotate the gun as needed
-    camera.add(gun); // Add the gun as a child of the camera
-  });
+  loader.load('/assets/models/environment.glb', (gltf) => {
+    const environment = gltf.scene;
 
-  // Shooting Mechanism
-  const projectiles = [];
+    // Compute the bounding box of the environment to position it properly
+    const box = new THREE.Box3().setFromObject(environment);
+    const size = new THREE.Vector3();
+    const center = new THREE.Vector3();
+    box.getSize(size); // Get the size of the bounding box
+    box.getCenter(center); // Get the center of the bounding box
 
-  function shoot() {
-    const projectileGeometry = new THREE.SphereGeometry(0.1, 8, 8);
-    const projectileMaterial = new THREE.MeshStandardMaterial({ color: 0x888888 }); // Gray projectile
-    const projectile = new THREE.Mesh(projectileGeometry, projectileMaterial);
+    // Adjust the environment's position to place it under the camera
+    environment.position.set(-center.x, -center.y, -center.z); // Center the environment
+    environment.position.y -= 2; // Lower it slightly so the camera is above it
 
-    // Position the projectile at the gun's barrel (front of the camera)
-    const barrelOffset = new THREE.Vector3(0, -0.5, -1);
-    projectile.position.copy(camera.localToWorld(barrelOffset));
-
-    // Set projectile velocity
-    const velocity = new THREE.Vector3();
-    camera.getWorldDirection(velocity);
-    velocity.multiplyScalar(1); // Adjust speed
-
-    projectile.userData.velocity = velocity;
-    scene.add(projectile);
-    projectiles.push(projectile);
-  }
-
-  window.addEventListener('mousedown', () => {
-    shoot();
-  });
-
-  function updateProjectiles() {
-    for (let i = projectiles.length - 1; i >= 0; i--) {
-      const projectile = projectiles[i];
-      projectile.position.add(projectile.userData.velocity);
-
-      // Remove the projectile if it goes out of bounds
-      if (
-        Math.abs(projectile.position.x) > 50 ||
-        Math.abs(projectile.position.y) > 50 ||
-        Math.abs(projectile.position.z) > 50
-      ) {
-        scene.remove(projectile);
-        projectiles.splice(i, 1);
+    environment.traverse((child) => {
+      if (child.isMesh) {
+        child.castShadow = true;
+        child.receiveShadow = true;
       }
-    }
-  }
+    });
+
+    scene.add(environment);
+  });
 
   // Pointer Lock for Mouse Look
   const canvas = renderer.domElement;
@@ -195,60 +108,41 @@ function startGame() {
 
   function updatePlayer() {
     const speed = 0.1; // Movement speed
-    let direction = new THREE.Vector3();
+    const direction = new THREE.Vector3(); // Movement direction
 
     // Calculate forward and right vectors based on camera rotation
-    const forward = new THREE.Vector3();
-    camera.getWorldDirection(forward);
-    forward.y = 0; // Ignore vertical movement
-    forward.normalize();
+    const forward = new THREE.Vector3(Math.sin(yaw), 0, -Math.cos(yaw));
+    const right = new THREE.Vector3(Math.sin(yaw + Math.PI / 2), 0, -Math.cos(yaw + Math.PI / 2));
 
-    const right = new THREE.Vector3();
-    right.crossVectors(forward, new THREE.Vector3(0, 1, 0)); // Right is perpendicular to forward and up
+    // Adjust movement direction based on key presses (reversed directions)
+    if (keys['w']) direction.add(forward.negate()); // Reverse forward
+    if (keys['s']) direction.add(forward); // Normal backward
+    if (keys['a']) direction.add(right.negate()); // Reverse right
+    if (keys['d']) direction.add(right); // Normal left
 
-    // Adjust movement direction based on key presses
-    if (keys['w']) direction.add(forward);
-    if (keys['s']) direction.add(forward.negate());
-    if (keys['a']) direction.add(right.negate());
-    if (keys['d']) direction.add(right);
-
-    // Normalize direction
+    // Normalize the direction vector (to avoid diagonal speed boost)
     direction.normalize();
 
     // Move the camera
-    const nextPosition = camera.position.clone().add(direction.multiplyScalar(speed));
-    let collision = false;
-    for (const object of collidableObjects) {
-      const objectBox = new THREE.Box3().setFromObject(object);
-      const playerBox = new THREE.Box3().setFromCenterAndSize(nextPosition, new THREE.Vector3(1, 1, 1));
-      if (objectBox.intersectsBox(playerBox)) {
-        collision = true;
-        break;
+    camera.position.add(direction.multiplyScalar(speed));
+
+    // Handle jumping
+    if (keys[' ']) {
+      if (!isJumping) {
+        velocityY = jumpStrength; // Apply jump strength
+        isJumping = true; // Prevent double-jumping
       }
-    }
-    if (!collision) {
-      camera.position.copy(nextPosition);
     }
 
-    // Check if player is on the ladder
-    if (checkLadderCollision() && keys[' ']) {
-      onLadder = true;
-      velocityY = 0.05; // Gradual upward movement while holding space
-    } else {
-      onLadder = false;
-    }
+    // Apply gravity
+    velocityY += gravity;
+    camera.position.y += velocityY;
 
-    if (onLadder && keys[' ']) {
-      const maxLadderHeight = 30; // Adjust to the maximum ladder height
-      if (camera.position.y < maxLadderHeight) {
-        velocityY += 0.01; // Gradually increase upward velocity while holding space
-      } else {
-        velocityY = 0; // Stop upward movement at the top of the ladder
-        camera.position.y = maxLadderHeight; // Snap to the top of the ladder
-      }
-    }
-        camera.position.y = maxLadderHeight; // Snap to the top of the ladder
-      }
+    // Prevent falling through the ground
+    if (camera.position.y < 2) {
+      camera.position.y = 2; // Reset to ground level
+      isJumping = false; // Allow jumping again
+      velocityY = 0; // Reset vertical velocity
     }
   }
 
@@ -257,7 +151,6 @@ function startGame() {
     requestAnimationFrame(animate);
 
     updatePlayer(); // Update player movement
-    updateProjectiles(); // Update projectile movement
     renderer.render(scene, camera); // Render the scene
   }
 
