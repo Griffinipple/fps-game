@@ -54,12 +54,21 @@ function startGame() {
 
   // Create Gray Tower in the Center
   const towerGeometry = new THREE.BoxGeometry(10, 5, 10); // Shorten block to allow jumping onto it
-  const towerMaterial = new THREE.MeshStandardMaterial({ color: 0x9c7f17 }); // Match the brown color of the ground
+  const towerMaterial = new THREE.MeshStandardMaterial({ color: 0x808080 }); // Gray color for the block
   const tower = new THREE.Mesh(towerGeometry, towerMaterial);
   tower.position.set(0, 2.5, 0); // Adjust position to match new height
   tower.castShadow = true;
   tower.receiveShadow = true;
   scene.add(tower);
+
+  // Create a platform directly on top of the block
+  const topPlatformGeometry = new THREE.PlaneGeometry(10, 10);
+  const topPlatformMaterial = new THREE.MeshStandardMaterial({ color: 0x9c7f17 }); // Same color as the ground
+  const topPlatform = new THREE.Mesh(topPlatformGeometry, topPlatformMaterial);
+  topPlatform.rotation.x = -Math.PI / 2; // Rotate to be horizontal
+  topPlatform.position.set(0, 5, 0); // Position directly above the tower
+  topPlatform.receiveShadow = true;
+  scene.add(topPlatform);
 
   // Add collision detection for the tower
   const towerBox = new THREE.Box3().setFromObject(tower);
@@ -70,16 +79,27 @@ function startGame() {
     const withinTowerZ = camera.position.z >= towerBox.min.z && camera.position.z <= towerBox.max.z;
 
     if (withinTowerX && withinTowerZ) {
-        const distanceY = camera.position.y - towerBox.max.y;
-        if (distanceY <= 1.5 && velocityY <= 0) { // Close to the top of the block and falling
-            camera.position.y = towerBox.max.y + 1; // Position the player on top of the block
-            velocityY = 0; // Reset vertical velocity
-            isJumping = false; // Allow jumping again
-        }
+      // Set player on top of the tower if within vertical range
+      if (camera.position.y <= towerBox.max.y && camera.position.y >= towerBox.min.y) {
+        camera.position.y = towerBox.max.y;
+        velocityY = 0; // Reset vertical velocity
+        isJumping = false; // Allow jumping again
+      }
     }
-}
 
-  // Pointer Lock for Mouse Look
+    // Check for platform collision on top of the tower
+    const platformHeight = 5; // Height of the platform above the tower
+    if (
+      withinTowerX &&
+      withinTowerZ &&
+      camera.position.y < platformHeight + 0.5 &&
+      camera.position.y > platformHeight - 1.5
+    ) {
+      camera.position.y = platformHeight; // Set camera on the platform
+      velocityY = 0; // Reset vertical velocity
+      isJumping = false; // Allow jumping again
+    }
+}  // Pointer Lock for Mouse Look
   const canvas = renderer.domElement;
   canvas.requestPointerLock = canvas.requestPointerLock || canvas.mozRequestPointerLock;
   document.exitPointerLock = document.exitPointerLock || document.mozExitPointerLock;
@@ -116,7 +136,7 @@ function startGame() {
   const jumpStrength = 0.45; // Jump height
 
   function updatePlayer() {
-    const speed = 0.2; // Movement speed
+    const speed = 0.2; // Increased movement speed for smoother and faster movement
     const direction = new THREE.Vector3(); // Movement direction
 
     // Calculate forward and right vectors based on camera rotation
@@ -145,38 +165,19 @@ function startGame() {
       camera.position.copy(nextPosition);
     }
 
-    // Raycaster for ground detection
-    const raycaster = new THREE.Raycaster(camera.position.clone(), new THREE.Vector3(0, -1, 0));
-    const intersects = raycaster.intersectObjects(scene.children);
-
-    let isOnGround = false;
-
-    for (const intersect of intersects) {
-      if (intersect.object.material && intersect.object.material.color.getHex() === 0x9c7f17) { // Check for brown ground
-        if (camera.position.y - intersect.point.y <= 1.5 && velocityY <= 0) {
-          camera.position.y = intersect.point.y + 1; // Adjust height above the ground
-          velocityY = 0; // Reset vertical velocity
-          isJumping = false; // Allow jumping again
-          isOnGround = true;
-          break;
-        }
+    // Handle jumping
+    if (keys[' ']) {
+      if (!isJumping) {
+        velocityY = jumpStrength; // Apply jump strength
+        isJumping = true; // Prevent double-jumping
       }
     }
 
-    // Ensure jump is allowed to initiate properly
-    if (keys[' '] && !isJumping && isOnGround) {
-      velocityY = jumpStrength; // Apply jump strength
-      isJumping = true; // Prevent double-jumping
-    }
-
-    // Apply gravity if not on the ground
-    if (!isOnGround) {
-      velocityY += gravity;
-    }
-
+    // Apply gravity
+    velocityY += gravity;
     camera.position.y += velocityY;
 
-    // Prevent falling below the ground
+    // Prevent falling through the ground
     if (camera.position.y < 2) {
       camera.position.y = 2; // Reset to ground level
       isJumping = false; // Allow jumping again
