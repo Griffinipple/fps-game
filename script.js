@@ -302,7 +302,7 @@ let canDoubleJump = false; // Track double jump ability
       velocityY = 0;
       canDoubleJump = true; // Reset double jump when touching the ground
     }
-  }
+}
 
   // Game Loop
   function animate() {
