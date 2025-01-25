@@ -264,7 +264,6 @@ let canDoubleJump = false; // Track double jump ability
         }
     }
 }
-    const groundLevel = 1; // Height of the ground
     camera.position.y += velocityY;
     if (camera.position.y < groundLevel) {
       camera.position.y = groundLevel;
