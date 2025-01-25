@@ -204,16 +204,14 @@ function startGame() {
     velocityY += gravity;
     camera.position.y += velocityY;
 
-    const groundLevel = 1;
-    if (camera.position.y < groundLevel) {
-      camera.position.y = groundLevel;
+    if (camera.position.y < 1) {
+      camera.position.y = 1;
       velocityY = 0;
       canDoubleJump = true;
     }
 
-    const groundLevel = 1;
-    if (camera.position.y < groundLevel) {
-      camera.position.y = groundLevel;
+    if (camera.position.y < 1) {
+      camera.position.y = 1;
       velocityY = 0;
       canDoubleJump = true;
     }
