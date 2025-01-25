@@ -54,7 +54,7 @@ function startGame() {
 
   // Create Gray Tower in the Center
   const towerGeometry = new THREE.BoxGeometry(10, 5, 10); // Shorten block to allow jumping onto it
-  const towerMaterial = new THREE.MeshStandardMaterial({ color: 0x808080 }); // Gray color for the block
+  const towerMaterial = new THREE.MeshStandardMaterial({ color: 0x9c7f17 }); // Match the brown color of the ground
   const tower = new THREE.Mesh(towerGeometry, towerMaterial);
   tower.position.set(0, 2.5, 0); // Adjust position to match new height
   tower.castShadow = true;
@@ -145,16 +145,37 @@ function startGame() {
       camera.position.copy(nextPosition);
     }
 
-    // Handle jumping
-    if (keys[' ']) {
-      if (!isJumping) {
-        velocityY = jumpStrength; // Apply jump strength
-        isJumping = true; // Prevent double-jumping
+    // Raycaster for ground detection
+    const raycaster = new THREE.Raycaster(camera.position.clone(), new THREE.Vector3(0, -1, 0));
+    const intersects = raycaster.intersectObjects(scene.children);
+
+    let isOnGround = false;
+
+    for (const intersect of intersects) {
+      if (intersect.object.material && intersect.object.material.color.getHex() === 0x9c7f17) { // Check for brown ground
+        if (camera.position.y - intersect.point.y <= 1.5) { // Check distance to the ground
+          camera.position.y = intersect.point.y + 1; // Adjust height above the ground
+          velocityY = 0; // Reset vertical velocity
+          isJumping = false; // Allow jumping again
+          isOnGround = true;
+          break;
+        }
       }
     }
 
-    // Apply gravity
-    velocityY += gravity;
+    // Apply gravity if not on the ground
+    if (!isOnGround) {
+      velocityY += gravity;
+    }
+
+    camera.position.y += velocityY;
+
+    // Prevent falling below the ground
+    if (camera.position.y < 2) {
+      camera.position.y = 2; // Reset to ground level
+      isJumping = false; // Allow jumping again
+      velocityY = 0; // Reset vertical velocity
+    }
     camera.position.y += velocityY;
 
     // Prevent falling through the ground
