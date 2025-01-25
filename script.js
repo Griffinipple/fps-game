@@ -218,7 +218,9 @@ function setupControls(camera, collidableObjects) {
     }
 
     camera.rotation.y -= mouseMovement.x * 0.5;
-    camera.rotation.x = Math.max(-Math.PI / 4, Math.min(Math.PI / 4, camera.rotation.x - mouseMovement.y * 0.5));
+    camera.rotation.x -= mouseMovement.y * 0.5;
+    if (camera.rotation.x > Math.PI / 4) camera.rotation.x = Math.PI / 4;
+    else if (camera.rotation.x < -Math.PI / 4) camera.rotation.x = -Math.PI / 4;
 
     mouseMovement.x = 0;
     mouseMovement.y = 0;
