@@ -217,8 +217,8 @@ function setupControls(camera, collidableObjects) {
       velocityY = jumpStrength;
     }
 
-    camera.rotation.y -= mouseMovement.x;
-    camera.rotation.x = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, camera.rotation.x - mouseMovement.y));
+    camera.rotation.y -= mouseMovement.x * 0.5;
+    camera.rotation.x = Math.max(-Math.PI / 4, Math.min(Math.PI / 4, camera.rotation.x - mouseMovement.y * 0.5));
 
     mouseMovement.x = 0;
     mouseMovement.y = 0;
