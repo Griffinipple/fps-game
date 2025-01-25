@@ -33,6 +33,9 @@ function startGame() {
         const sensitivity = 0.002;
         camera.rotation.y -= event.movementX * sensitivity;
         camera.rotation.x -= event.movementY * sensitivity;
+
+        // Offset rotation for proper perspective
+        camera.rotation.order = 'YXZ';
         camera.rotation.x = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, camera.rotation.x));
       });
     } else {
