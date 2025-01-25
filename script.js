@@ -1,19 +1,14 @@
 // Get the canvas and context
-const canvas = document.getElementById('game-canvas');
-const ctx = canvas.getContext('2d');
-
-// Set the canvas dimensions
-canvas.width = 800;
-canvas.height = 600;
+let scene, camera, renderer, player, platform, block;
 
 // Define the player properties
-let player = {
-    x: 100,
-    y: 100,
-    width: 50,
-    height: 50,
+let playerProperties = {
+    x: 0,
+    y: 0,
+    z: 0,
     velocityX: 0,
     velocityY: 0,
+    velocityZ: 0,
     speed: 5,
     jumpSpeed: 10,
     gravity: 0.5,
@@ -22,19 +17,23 @@ let player = {
 };
 
 // Define the platform properties
-let platform = {
+let platformProperties = {
     x: 0,
-    y: canvas.height - 50,
-    width: canvas.width,
-    height: 50
+    y: -10,
+    z: 0,
+    width: 100,
+    height: 10,
+    depth: 100
 };
 
 // Define the block properties
-let block = {
-    x: canvas.width / 2 - 25,
-    y: platform.y - 50,
-    width: 50,
-    height: 50
+let blockProperties = {
+    x: 0,
+    y: 0,
+    z: 0,
+    width: 10,
+    height: 10,
+    depth: 10
 };
 
 // Define the game state
@@ -44,74 +43,115 @@ let gameState = 'lobby';
 document.getElementById('play-button').addEventListener('click', () => {
     gameState = 'game';
     document.getElementById('lobby-screen').style.display = 'none';
-    canvas.style.display = 'block';
-    mainLoop();
+    init();
+    animate();
 });
 
-// Main game loop
-function mainLoop() {
+// Initialize the scene
+function init() {
+    // Create the scene
+    scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x333);
+
+    // Create the camera
+    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.z = 50;
+
+    // Create the renderer
+    renderer = new THREE.WebGLRenderer();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+
+    // Create the player
+    let playerGeometry = new THREE.SphereGeometry(5, 32, 32);
+    playerGeometry.scale(1, 2, 1); // Make the player's body elliptical
+    let playerMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+    player = new THREE.Mesh(playerGeometry, playerMaterial);
+    player.position.x = playerProperties.x;
+    player.position.y = playerProperties.y;
+    player.position.z = playerProperties.z;
+    scene.add(player);
+
+    // Create the platform
+    let platformGeometry = new THREE.BoxGeometry(platformProperties.width, platformProperties.height, platformProperties.depth);
+    let platformMaterial = new THREE.MeshBasicMaterial({ color: 0x666666 });
+    platform = new THREE.Mesh(platformGeometry, platformMaterial);
+    platform.position.x = platformProperties.x;
+    platform.position.y = platformProperties.y;
+    platform.position.z = platformProperties.z;
+    scene.add(platform);
+
+    // Create the block
+    let blockGeometry = new THREE.BoxGeometry(blockProperties.width, blockProperties.height, blockProperties.depth);
+    let blockMaterial = new THREE.MeshBasicMaterial({ color: 0x888888 });
+    block = new THREE.Mesh(blockGeometry, blockMaterial);
+    block.position.x = blockProperties.x;
+    block.position.y = blockProperties.y;
+    block.position.z = blockProperties.z;
+    scene.add(block);
+}
+
+// Animate the scene
+function animate() {
     if (gameState === 'game') {
-        // Clear the canvas
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-        // Draw the platform
-        ctx.fillStyle = '#666';
-        ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
-
-        // Draw the block
-        ctx.fillStyle = '#888';
-        ctx.fillRect(block.x, block.y, block.width, block.height);
-
-        // Draw the player
-        ctx.fillStyle = '#f00';
-        ctx.fillRect(player.x, player.y, player.width, player.height);
-
         // Update the player position
-        player.x += player.velocityX;
-        player.y += player.velocityY;
+        player.position.x += playerProperties.velocityX;
+        player.position.y += playerProperties.velocityY;
+        player.position.z += playerProperties.velocityZ;
 
         // Apply gravity
-        player.velocityY += player.gravity;
+        playerProperties.velocityY += playerProperties.gravity;
 
         // Check for collision with the platform
-        if (player.y + player.height > platform.y && player.x + player.width > platform.x && player.x < platform.x + platform.width) {
-            player.y = platform.y - player.height;
-            player.velocityY = 0;
-            player.onGround = true;
-            player.doubleJump = false;
+        if (player.position.y + 10 > platform.position.y + platformProperties.height / 2 && player.position.x + 10 > platform.position.x - platformProperties.width / 2 && player.position.x - 10 < platform.position.x + platformProperties.width / 2 && player.position.z + 10 > platform.position.z - platformProperties.depth / 2 && player.position.z - 10 < platform.position.z + platformProperties.depth / 2) {
+            player.position.y = platform.position.y + platformProperties.height / 2 - 10;
+            playerProperties.velocityY = 0;
+            playerProperties.onGround = true;
+            playerProperties.doubleJump = false;
         } else {
-            player.onGround = false;
+            playerProperties.onGround = false;
         }
 
         // Check for collision with the block
-        if (player.x + player.width > block.x && player.x < block.x + block.width && player.y + player.height > block.y && player.y < block.y + block.height) {
-            player.y = block.y - player.height;
-            player.velocityY = 0;
-            player.onGround = true;
-            player.doubleJump = false;
+        if (player.position.x + 10 > block.position.x - blockProperties.width / 2 && player.position.x - 10 < block.position.x + blockProperties.width / 2 && player.position.y + 10 > block.position.y - blockProperties.height / 2 && player.position.y - 10 < block.position.y + blockProperties.height / 2 && player.position.z + 10 > block.position.z - blockProperties.depth / 2 && player.position.z - 10 < block.position.z + blockProperties.depth / 2) {
+            player.position.y = block.position.y - blockProperties.height / 2 - 10;
+            playerProperties.velocityY = 0;
+            playerProperties.onGround = true;
+            playerProperties.doubleJump = false;
         } else {
-            player.onGround = false;
+            playerProperties.onGround = false;
         }
 
         // Handle keyboard input
-        if (isKeyPressed('w') && player.onGround) {
-            player.velocityY = -player.jumpSpeed;
-            player.onGround = false;
-        } else if (isKeyPressed('w') && !player.onGround && !player.doubleJump) {
-            player.velocityY = -player.jumpSpeed;
-            player.doubleJump = true;
+        if (isKeyPressed('w')) {
+            playerProperties.velocityZ = -playerProperties.speed;
+        } else if (isKeyPressed('s')) {
+            playerProperties.velocityZ = playerProperties.speed;
+        } else {
+            playerProperties.velocityZ = 0;
         }
 
         if (isKeyPressed('a')) {
-            player.velocityX = -player.speed;
+            playerProperties.velocityX = -playerProperties.speed;
         } else if (isKeyPressed('d')) {
-            player.velocityX = player.speed;
+            playerProperties.velocityX = playerProperties.speed;
         } else {
-            player.velocityX = 0;
+            playerProperties.velocityX = 0;
         }
 
+        if (isKeyPressed(' ') && playerProperties.onGround) {
+            playerProperties.velocityY = -playerProperties.jumpSpeed;
+            playerProperties.onGround = false;
+        } else if (isKeyPressed(' ') && !playerProperties.onGround && !playerProperties.doubleJump) {
+            playerProperties.velocityY = -playerProperties.jumpSpeed;
+            playerProperties.doubleJump = true;
+        }
+
+        // Render the scene
+        renderer.render(scene, camera);
+
         // Request the next frame
-        requestAnimationFrame(mainLoop);
+        requestAnimationFrame(animate);
     }
 }
 
