@@ -108,11 +108,11 @@ function startGame() {
     const forward = new THREE.Vector3(Math.sin(yaw), 0, -Math.cos(yaw));
     const right = new THREE.Vector3(Math.sin(yaw + Math.PI / 2), 0, -Math.cos(yaw + Math.PI / 2));
 
-    // Adjust movement direction based on key presses (reversed directions)
-    if (keys['w']) direction.add(forward); // Reverse forward
-    if (keys['s']) direction.add(forward.negate()); // Normal backward
-    if (keys['a']) direction.add(right.negate()); // Reverse right
-    if (keys['d']) direction.add(right); // Normal left
+    // Adjust movement direction based on key presses
+    if (keys['w']) direction.add(forward); // Move forward
+    if (keys['s']) direction.add(forward.clone().negate()); // Move backward
+    if (keys['a']) direction.add(right.clone().negate()); // Move left
+    if (keys['d']) direction.add(right); // Move right
 
     // Normalize the direction vector (to avoid diagonal speed boost)
     direction.normalize();
