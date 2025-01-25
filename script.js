@@ -98,7 +98,7 @@ function startGame() {
   const jumpStrength = 0.15; // Jump height
 
   function updatePlayer() {
-    const speed = 0.1; // Movement speed
+    const speed = 0.2; // Increased movement speed for smoother and faster movement
     const direction = new THREE.Vector3(); // Movement direction
 
     // Calculate forward and right vectors based on camera rotation
@@ -106,8 +106,8 @@ function startGame() {
     const right = new THREE.Vector3(Math.sin(yaw + Math.PI / 2), 0, -Math.cos(yaw + Math.PI / 2));
 
     // Adjust movement direction based on key presses (reversed directions)
-    if (keys['w']) direction.add(forward); // Reverse forward
-    if (keys['s']) direction.add(forward.negate()); // Normal backward
+    if (keys['w']) direction.add(forward.negate()); // Reverse forward
+    if (keys['s']) direction.add(forward); // Normal backward
     if (keys['a']) direction.add(right.negate()); // Reverse right
     if (keys['d']) direction.add(right); // Normal left
 
