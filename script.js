@@ -66,7 +66,7 @@ function startGame() {
   const topPlatformMaterial = new THREE.MeshStandardMaterial({ color: 0x9c7f17 }); // Same color as the ground
   const topPlatform = new THREE.Mesh(topPlatformGeometry, topPlatformMaterial);
   topPlatform.rotation.x = -Math.PI / 2; // Rotate to be horizontal
-  topPlatform.position.set(0, 5, 0); // Position directly above the tower
+  topPlatform.position.set(0, 5.001, 0); // Position slightly above the tower
   topPlatform.receiveShadow = true;
   scene.add(topPlatform);
 
@@ -96,8 +96,8 @@ function startGame() {
       camera.position.y > platformHeight - 1.5
     ) {
       camera.position.y = platformHeight; // Set camera on the platform
-      velocityY = 0; // Reset vertical velocity
       isJumping = false; // Allow jumping again
+      velocityY = 0; // Reset vertical velocity
     }
 }  // Pointer Lock for Mouse Look
   const canvas = renderer.domElement;
