@@ -116,7 +116,7 @@ function startGame() {
   const jumpStrength = 0.45; // Jump height
 
   function updatePlayer() {
-    const speed = 0.2; // Increased movement speed for smoother and faster movement
+    const speed = 0.2; // Movement speed
     const direction = new THREE.Vector3(); // Movement direction
 
     // Calculate forward and right vectors based on camera rotation
@@ -153,7 +153,7 @@ function startGame() {
 
     for (const intersect of intersects) {
       if (intersect.object.material && intersect.object.material.color.getHex() === 0x9c7f17) { // Check for brown ground
-        if (camera.position.y - intersect.point.y <= 1.5 && velocityY <= 0 && !isJumping) {
+        if (camera.position.y - intersect.point.y <= 1.5 && velocityY <= 0) {
           camera.position.y = intersect.point.y + 1; // Adjust height above the ground
           velocityY = 0; // Reset vertical velocity
           isJumping = false; // Allow jumping again
@@ -161,6 +161,12 @@ function startGame() {
           break;
         }
       }
+    }
+
+    // Ensure jump is allowed to initiate properly
+    if (keys[' '] && !isJumping && isOnGround) {
+      velocityY = jumpStrength; // Apply jump strength
+      isJumping = true; // Prevent double-jumping
     }
 
     // Apply gravity if not on the ground
@@ -171,21 +177,6 @@ function startGame() {
     camera.position.y += velocityY;
 
     // Prevent falling below the ground
-    if (camera.position.y < 2) {
-      camera.position.y = 2; // Reset to ground level
-      isJumping = false; // Allow jumping again
-      velocityY = 0; // Reset vertical velocity
-    }
-
-    // Ensure jump is allowed to initiate properly
-    if (keys[' '] && !isJumping && isOnGround) {
-      velocityY = jumpStrength; // Apply jump strength
-      isJumping = true; // Prevent double-jumping
-    }
-    }
-    camera.position.y += velocityY;
-
-    // Prevent falling through the ground
     if (camera.position.y < 2) {
       camera.position.y = 2; // Reset to ground level
       isJumping = false; // Allow jumping again
