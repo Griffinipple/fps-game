@@ -79,103 +79,21 @@ function startGame() {
     const withinTowerZ = camera.position.z >= towerBox.min.z && camera.position.z <= towerBox.max.z;
 
     if (withinTowerX && withinTowerZ) {
-      // Set player on top of the tower if within vertical range
-      if (camera.position.y <= towerBox.max.y && camera.position.y >= towerBox.min.y) {
-        camera.position.y = towerBox.max.y;
-        velocityY = 0; // Reset vertical velocity
-        isJumping = false; // Allow jumping again
-      }
-    }
-
-    // Check for platform collision on top of the tower
-    const platformHeight = 5; // Height of the platform above the tower
-    if (
-      withinTowerX &&
-      withinTowerZ &&
-      camera.position.y < platformHeight + 0.5 &&
-      camera.position.y > platformHeight - 1.5
-    ) {
-      camera.position.y = platformHeight; // Set camera on the platform
-      isJumping = false; // Allow jumping again
-      velocityY = 0; // Reset vertical velocity
-    }
-}  // Pointer Lock for Mouse Look
-  const canvas = renderer.domElement;
-  canvas.requestPointerLock = canvas.requestPointerLock || canvas.mozRequestPointerLock;
-  document.exitPointerLock = document.exitPointerLock || document.mozExitPointerLock;
-
-  canvas.addEventListener('click', () => {
-    canvas.requestPointerLock();
-  });
-
-  // Mouse Look Variables
-  let yaw = 0; // Horizontal rotation (left/right)
-  let pitch = 0; // Vertical rotation (up/down)
-
-  document.addEventListener('mousemove', (event) => {
-    if (document.pointerLockElement === canvas) {
-      const sensitivity = 0.002; // Mouse sensitivity
-      yaw -= event.movementX * sensitivity; // Rotate horizontally
-      pitch -= event.movementY * sensitivity; // Rotate vertically
-
-      // Clamp the pitch to avoid flipping (up/down rotation)
-      pitch = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, pitch));
-
-      camera.rotation.set(pitch, yaw, 0);
-    }
-  });
-
-  // WASD and Jump Controls
-  const keys = {};
-  document.addEventListener('keydown', (e) => (keys[e.key.toLowerCase()] = true));
-  document.addEventListener('keyup', (e) => (keys[e.key.toLowerCase()] = false));
-
-  let isJumping = false; // To prevent double-jumping
-  let velocityY = 0; // Vertical velocity for jumping
-  const gravity = -0.02; // Increased gravity affecting the player
-  const jumpStrength = 0.50; // Jump height
-
-  function updatePlayer() {
-    const speed = 0.2; // Increased movement speed for smoother and faster movement
-    const direction = new THREE.Vector3(); // Movement direction
-
-    // Calculate forward and right vectors based on camera rotation
-    const forward = new THREE.Vector3();
-    camera.getWorldDirection(forward);
-    forward.y = 0; // Ignore vertical movement
-    forward.normalize();
-    const right = new THREE.Vector3();
-    right.crossVectors(forward, new THREE.Vector3(0, 1, 0)); // Right vector is perpendicular to forward and up
-
-    // Adjust movement direction based on key presses
-    if (keys['w']) direction.add(forward); // Move forward
-    if (keys['s']) direction.add(forward.clone().negate()); // Move backward
-    if (keys['a']) direction.add(right.clone().negate()); // Move left
-    if (keys['d']) direction.add(right); // Move right
-
-    // Normalize the direction vector (to avoid diagonal speed boost)
-    direction.normalize();
-
-    // Move the camera
-    const nextPosition = camera.position.clone().add(direction.multiplyScalar(speed));
-    const playerBox = new THREE.Box3().setFromCenterAndSize(nextPosition, new THREE.Vector3(1, 1, 1));
-
-    // Check for collision with the block and platform
-    const withinTowerX = camera.position.x >= towerBox.min.x && camera.position.x <= towerBox.max.x;
-    const withinTowerZ = camera.position.z >= towerBox.min.z && camera.position.z <= towerBox.max.z;
-
-    if (withinTowerX && withinTowerZ) {
       const platformHeight = 5.003; // Platform height
       if (camera.position.y <= platformHeight + 1.2 && camera.position.y >= towerBox.max.y) {
-        camera.position.y = platformHeight + 0.5; // Place player higher above the platform
-        velocityY = 0; // Reset vertical velocity
-        isJumping = false; // Allow jumping again
+        if (!keys['w'] && !keys['a'] && !keys['s'] && !keys['d']) {
+          camera.position.y = platformHeight + 0.5; // Place player higher above the platform
+          velocityY = 0; // Reset vertical velocity
+          isJumping = false; // Allow jumping again
+        }
       } else if (camera.position.y < towerBox.max.y && camera.position.y >= towerBox.min.y) {
         camera.position.y = towerBox.max.y + 0.5; // Place player higher above the block
         velocityY = 0; // Reset vertical velocity
         isJumping = false; // Allow jumping again
       }
     } else {
+      camera.position.copy(nextPosition); // Allow movement if no collision
+    }
       camera.position.copy(nextPosition); // Allow movement if no collision
     }
 
