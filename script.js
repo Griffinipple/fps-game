@@ -257,19 +257,19 @@ let canDoubleJump = false; // Track double jump ability
         camera.position.y += velocityY;
 
         const groundLevel = 1; // Ground height
-        if (camera.position.y < groundLevel) {
-            camera.position.y = groundLevel;
-            velocityY = 0;
-            canDoubleJump = true;
-        }
-    }
+        // Apply ground level logic only once
+if (camera.position.y < 1) {
+    camera.position.y = 1;
+    velocityY = 0;
+    canDoubleJump = true;
+}    }
 }
-    if (camera.position.y < groundLevel) {
-      camera.position.y = groundLevel;
-      velocityY = 0;
-      canDoubleJump = true; // Reset double jump when touching the ground
-    }
-  }
+    // Apply ground level logic only once
+if (camera.position.y < 1) {
+    camera.position.y = 1;
+    velocityY = 0;
+    canDoubleJump = true;
+}  }
 
   // Game Loop
   function animate() {
