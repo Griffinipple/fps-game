@@ -71,7 +71,7 @@ function startGame() {
 
     if (withinTowerX && withinTowerZ) {
       // Set player on top of the tower if within vertical range
-      if (camera.position.y < towerBox.max.y) {
+      if (camera.position.y <= towerBox.max.y && camera.position.y >= towerBox.min.y) {
         camera.position.y = towerBox.max.y;
         velocityY = 0; // Reset vertical velocity
         isJumping = false; // Allow jumping again
@@ -113,7 +113,7 @@ function startGame() {
   let isJumping = false; // To prevent double-jumping
   let velocityY = 0; // Vertical velocity for jumping
   const gravity = -0.02; // Increased gravity affecting the player
-  const jumpStrength = 0.45; // Jump height
+  const jumpStrength = 0.15; // Jump height
 
   function updatePlayer() {
     const speed = 0.2; // Increased movement speed for smoother and faster movement
