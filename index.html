@@ -1,25 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FPS Game</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three/examples/js/loaders/GLTFLoader.js"></script>
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FPS Game</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <!-- Lobby Screen -->
-  <div id="lobby">
-    <h1>Welcome to the FPS Game</h1>
-    <button id="play-button">Play</button>
-  </div>
-
-  <!-- Game Canvas (Initially Hidden) -->
-  <div id="game" style="display: none;">
-    <canvas id="game-canvas"></canvas>
-  </div>
-
-  <script src="script.js"></script>
+    <div id="lobby-screen">
+        <button id="play-button">Play</button>
+    </div>
+    <canvas id="game-canvas" width="800" height="600"></canvas>
+    <script src="script.js"></script>
 </body>
 </html>
