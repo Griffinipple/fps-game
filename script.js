@@ -125,6 +125,21 @@ const buildingPositions = [
       const buildingMaterial = new THREE.MeshStandardMaterial({ color: 0x333333 });
       const building = new THREE.Mesh(buildingGeometry, buildingMaterial);
       building.position.set(posX, height / 2, posZ);
+
+      // Add a flat platform to the top of the building
+      const platformGeometry = new THREE.PlaneGeometry(width, depth);
+      const platformMaterial = new THREE.MeshStandardMaterial({ color: 0xaaaaaa });
+      const platform = new THREE.Mesh(platformGeometry, platformMaterial);
+      platform.rotation.x = -Math.PI / 2; // Make it horizontal
+      platform.position.set(building.position.x, building.position.y + height / 2 + 0.01, building.position.z); // Slightly above the building to prevent overlap
+      platform.receiveShadow = true;
+      scene.add(platform);
+
+      // Add platform to collidable objects
+      const platformBox = new THREE.Box3().setFromObject(platform);
+      platform.userData.collisionBox = platformBox;
+      collidableObjects.push(platform);
+
       building.castShadow = true;
       building.receiveShadow = true;
       scene.add(building);
