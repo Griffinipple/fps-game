@@ -133,7 +133,7 @@ function startGame() {
   let isJumping = false; // To prevent double-jumping
   let velocityY = 0; // Vertical velocity for jumping
   const gravity = -0.02; // Increased gravity affecting the player
-  const jumpStrength = 0.45; // Jump height
+  const jumpStrength = 0.50; // Jump height
 
   function updatePlayer() {
     const speed = 0.2; // Increased movement speed for smoother and faster movement
@@ -160,9 +160,23 @@ function startGame() {
     const nextPosition = camera.position.clone().add(direction.multiplyScalar(speed));
     const playerBox = new THREE.Box3().setFromCenterAndSize(nextPosition, new THREE.Vector3(1, 1, 1));
 
-    // Check for collision with the tower
-    if (!towerBox.intersectsBox(playerBox)) {
-      camera.position.copy(nextPosition);
+    // Check for collision with the block and platform
+    const withinTowerX = camera.position.x >= towerBox.min.x && camera.position.x <= towerBox.max.x;
+    const withinTowerZ = camera.position.z >= towerBox.min.z && camera.position.z <= towerBox.max.z;
+
+    if (withinTowerX && withinTowerZ) {
+      const platformHeight = 5.003; // Platform height
+      if (camera.position.y <= platformHeight && camera.position.y >= towerBox.max.y) {
+        camera.position.y = platformHeight; // Place player on the platform
+        velocityY = 0; // Reset vertical velocity
+        isJumping = false; // Allow jumping again
+      } else if (camera.position.y < towerBox.max.y && camera.position.y >= towerBox.min.y) {
+        camera.position.y = towerBox.max.y; // Place player on the block
+        velocityY = 0; // Reset vertical velocity
+        isJumping = false; // Allow jumping again
+      }
+    } else {
+      camera.position.copy(nextPosition); // Allow movement if no collision
     }
 
     // Handle jumping
