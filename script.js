@@ -13,9 +13,23 @@ function initializeGame() {
   lobby.style.display = 'none';
   gameDiv.style.display = 'block';
 
+  // Request pointer lock for better movement control
+  const canvas = document.getElementById('game-canvas');
+  canvas.requestPointerLock = canvas.requestPointerLock || canvas.mozRequestPointerLock;
+  canvas.requestPointerLock();
+
   // Start the game
   setupScene();
 }
+
+document.addEventListener('pointerlockchange', () => {
+  const canvas = document.getElementById('game-canvas');
+  if (document.pointerLockElement === canvas) {
+    console.log('Pointer locked');
+  } else {
+    console.log('Pointer unlocked');
+  }
+});
 
 function setupScene() {
   const collidableObjects = [];
@@ -142,12 +156,20 @@ function setupEnvironment(scene, buildingPositions, collidableObjects) {
 
 function setupControls(camera, collidableObjects) {
   const keys = {};
+  let mouseMovement = { x: 0, y: 0 };
+
   document.addEventListener('keydown', (e) => (keys[e.key.toLowerCase()] = true));
   document.addEventListener('keyup', (e) => (keys[e.key.toLowerCase()] = false));
+  document.addEventListener('mousemove', (e) => {
+    mouseMovement.x = e.movementX * 0.002;
+    mouseMovement.y = e.movementY * 0.002;
+  });
 
   let velocityY = 0;
   const gravity = -0.01;
   const movementSpeed = 0.2;
+  const smoothFactor = 0.9;
+  let velocity = new THREE.Vector3();
 
   function updatePlayer() {
     let direction = new THREE.Vector3();
@@ -181,9 +203,17 @@ function setupControls(camera, collidableObjects) {
     }
 
     if (!collision) {
-      camera.position.x = nextPosition.x;
-      camera.position.z = nextPosition.z;
+      velocity.lerp(direction.multiplyScalar(movementSpeed), smoothFactor);
+      camera.position.x += velocity.x;
+      camera.position.z += velocity.z;
     }
+
+    camera.rotation.y -= mouseMovement.x;
+    camera.rotation.x -= mouseMovement.y;
+    camera.rotation.x = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, camera.rotation.x));
+
+    mouseMovement.x = 0;
+    mouseMovement.y = 0;
 
     velocityY += gravity;
     camera.position.y += velocityY;
