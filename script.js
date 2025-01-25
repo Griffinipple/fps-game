@@ -16,6 +16,21 @@ playButton.addEventListener('click', () => {
 });
 
 function startGame() {
+  const canvas = document.getElementById('game-canvas');
+  canvas.requestPointerLock = canvas.requestPointerLock || canvas.mozRequestPointerLock;
+  document.exitPointerLock = document.exitPointerLock || document.mozExitPointerLock;
+
+  canvas.addEventListener('click', () => {
+    canvas.requestPointerLock();
+  });
+
+  document.addEventListener('pointerlockchange', () => {
+    if (document.pointerLockElement === canvas) {
+      console.log('Pointer locked');
+    } else {
+      console.log('Pointer unlocked');
+    }
+  });
   const collidableObjects = [];
   const verticalCollidableObjects = []; // Separate set for vertical collision handling
   const buildingPositions = [
