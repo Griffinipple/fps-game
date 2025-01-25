@@ -27,6 +27,34 @@ function startGame() {
   document.addEventListener('pointerlockchange', () => {
     if (document.pointerLockElement === canvas) {
       console.log('Pointer locked');
+
+      // Enable mouse movement when locked
+      document.addEventListener('mousemove', (event) => {
+        const sensitivity = 0.002;
+        camera.rotation.y -= event.movementX * sensitivity;
+        camera.rotation.x -= event.movementY * sensitivity;
+        camera.rotation.x = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, camera.rotation.x));
+      });
+    } else {
+      console.log('Pointer unlocked');
+    }
+  });
+
+  document.addEventListener('pointerlockerror', () => {
+    console.error('Pointer lock failed.');
+  });
+
+  document.addEventListener('pointerlockchange', () => {
+    if (document.pointerLockElement === canvas) {
+      console.log('Pointer locked');
+
+      // Enable mouse movement when locked
+      document.addEventListener('mousemove', (event) => {
+        const sensitivity = 0.002;
+        camera.rotation.y -= event.movementX * sensitivity;
+        camera.rotation.x -= event.movementY * sensitivity;
+        camera.rotation.x = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, camera.rotation.x));
+      });
     } else {
       console.log('Pointer unlocked');
     }
